@@ -26,7 +26,8 @@ class DuelManager {
             duellists   : [
                 { color: 'red', duellist: offender },
                 { color: 'blue', duellist: defender }
-            ]
+            ],
+            busy        : true
         })
         this.duels.push(duel)
 
@@ -113,9 +114,9 @@ class DuelManager {
                 }
             }
             const bonusIdx = duel.bonuses.findIndex(b => b === bonus)
-            if (bonusIdx)
+            if (bonusIdx) {
                 duel.bonuses.splice(bonusIdx, 1)
-
+            }
         }
 
         duel.count.rounds += 1
@@ -130,7 +131,7 @@ class DuelManager {
             duel
         }
     }
-    
+
     update (args) {
         const index = this.duels.findIndex(d => d.id === args.id)
         if (index < 0)

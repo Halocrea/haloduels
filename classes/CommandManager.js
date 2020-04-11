@@ -338,7 +338,7 @@ class CommandManager {
             ratio = `${Math.round((duellist.stats.victories/(duellist.stats.victories + duellist.stats.defeats))*10000)/100}%`
         else 
             ratio = `N/A`
-        
+
         const embed = this._genEmbed({
             color       : '#43b581',
             description : 'Allez, on va voir si tu peux flex :',
@@ -464,97 +464,98 @@ class CommandManager {
             })
     }
 
-    attack (message) {
+    async attack (message) {
         const duel = this.duelManager.getById(message.channel.id)
         if (!duel)
             return message.channel.send(`Hmm il semblerait que vous tentiez ça dans le mauvais channel ; pour provoquer un joueur en duel, tapez \`!duel @Joueur\` dans ${this.mainChannel}.`).catch(console.log)
         
-        const itvl = setInterval(async () => {
-            if (duel.busy)
-                return 
+        if (duel.busy) 
+            return message.delete()
+        
+        duel.busy           = true
+        const round         = this.duelManager.generateNewRound(duel, message.author.id)
+        
+        const winner        = duel.duellists.find(d => d.duellist.id === round.winner)
+        const winnerMember  = await this.guild.members.fetch(round.winner)
+        const embed         = this._genEmbed({
+            title       : `${winner.duellist.displayName.toUpperCase()} DOMINE CETTE MANCHE !`,
+            color       : winner.color === 'red' ? '#fa1212' : '#1da1f2',
+            description : round.statement,
+            thumbnail   : winnerMember.user.avatarURL({ format: 'jpg', dynamic: true, size: 128 }),
+            image       : round.image
+        })
+        const offender = this.duellistManager.getById(message.author.id)
+        message.channel.send(`_Et c'est **${offender.displayName}** qui attaque !_`)
+            .then(() => {
+                message.channel
+                    .send(embed)
+                    .then(async () => {
+                        const loserBonus    = duel.bonuses.find(b => b.receiverId !== round.winner && b.bonus.worksIf === RESULT.DEFEAT && b.bonus.type === round.type) 
+                        const loser         = duel.duellists.find(d => d.duellist.id !== round.winner)
+                        const loserMember   = await this.guild.members.fetch(loser.duellist.id)
 
-            clearInterval(itvl)
-            duel.busy           = true
-            const round         = this.duelManager.generateNewRound(duel, message.author.id)
-            
-            const winner        = duel.duellists.find(d => d.duellist.id === round.winner)
-            const winnerMember  = await this.guild.members.fetch(round.winner)
-            const embed         = this._genEmbed({
-                title       : `${winner.duellist.displayName.toUpperCase()} DOMINE CETTE MANCHE !`,
-                color       : winner.color === 'red' ? '#fa1212' : '#1da1f2',
-                description : round.statement,
-                thumbnail   : winnerMember.user.avatarURL({ format: 'jpg', dynamic: true, size: 128 }),
-                image       : round.image
-            })
-            message.channel
-                .send(embed)
-                .then(async () => {
-                    const loserBonus    = duel.bonuses.find(b => b.receiverId !== round.winner && b.bonus.worksIf === RESULT.DEFEAT && b.bonus.type === round.type) 
-                    const loser         = duel.duellists.find(d => d.duellist.id !== round.winner)
-                    const loserMember   = await this.guild.members.fetch(loser.duellist.id)
-
-                    if (loserBonus) {
-                        const bonusEmbed    = this._genEmbed({
-                            title       : `MAIS ${loser.duellist.displayName.toUpperCase()} NE S'AVOUE PAS VAINCU SI VITE!`,
-                            thumbnail   : loserMember.user.avatarURL({ format: 'jpg', dynamic: true, size: 128 }),
-                            color       : loser.color === 'red' ? '#fa1212' : '#1da1f2',
-                            description : loserBonus.bonus.description.replace('{duellist}', loser.duellist.displayName).replace('{donator}', loserBonus.donorName).replace('{opponent}', winner.duellist.displayName),
-                            image       : loserBonus.bonus.image
-                        })
-                        setTimeout(() => {
-                            message.channel
-                            .send(bonusEmbed)
-                            .then(() => {
-                                const duelWithWinner = this.duelManager.newRoundDone(duel, round, loserBonus)
-                                setTimeout(() => {
-                                    message.channel.send(this._genEndRoundEmbed(duelWithWinner))
-                                    .then(() => {
-                                        this._newRoundOrEndGame(message, duelWithWinner)
-                                    })
-                                    .catch(console.log)
-                                }, 2000)
-                            })
-                            .catch(console.log)
-                        }, 2000)
-                    } else {
-                        const winnerBonus = duel.bonuses.find(b => b.receiverId === round.winner && b.bonus.worksIf === RESULT.VICTORY && b.bonus.type === round.type) 
-                        
-                        if (winnerBonus) {
+                        if (loserBonus) {
                             const bonusEmbed    = this._genEmbed({
-                                title       : `ET ÇA TAUNT, EN PLUS !`,
-                                thumbnail   : winnerMember.user.avatarURL({ format: 'jpg', dynamic: true, size: 128 }),
-                                color       : winner.color === 'red' ? '#fa1212' : '#1da1f2',
-                                description : winnerBonus.bonus.description.replace('{duellist}', loser.duellist.displayName).replace('{donator}', winnerBonus.donorName).replace('{opponent}', winner.duellist.displayName),
-                                image       : winnerBonus.bonus.image
+                                title       : `MAIS ${loser.duellist.displayName.toUpperCase()} NE S'AVOUE PAS VAINCU SI VITE!`,
+                                thumbnail   : loserMember.user.avatarURL({ format: 'jpg', dynamic: true, size: 128 }),
+                                color       : loser.color === 'red' ? '#fa1212' : '#1da1f2',
+                                description : loserBonus.bonus.description.replace('{duellist}', loser.duellist.displayName).replace('{donator}', loserBonus.donorName).replace('{opponent}', winner.duellist.displayName),
+                                image       : loserBonus.bonus.image
                             })
                             setTimeout(() => {
                                 message.channel
                                 .send(bonusEmbed)
                                 .then(() => {
-                                    const duelWithWinner = this.duelManager.newRoundDone(duel, round, winnerBonus)
+                                    const duelWithWinner = this.duelManager.newRoundDone(duel, round, loserBonus)
                                     setTimeout(() => {
                                         message.channel.send(this._genEndRoundEmbed(duelWithWinner))
-                                            .then(() => {
-                                                this._newRoundOrEndGame(message, duelWithWinner)
-                                            })
-                                            .catch(console.log)
-                                    })
+                                        .then(() => {
+                                            this._newRoundOrEndGame(message, duelWithWinner)
+                                        })
+                                        .catch(console.log)
+                                    }, 2000)
                                 })
                                 .catch(console.log)
                             }, 2000)
                         } else {
-                            const duelWithWinner = this.duelManager.newRoundDone(duel, round)
-                            setTimeout(() => {
-                                message.channel.send(this._genEndRoundEmbed(duelWithWinner))
+                            const winnerBonus = duel.bonuses.find(b => b.receiverId === round.winner && b.bonus.worksIf === RESULT.VICTORY && b.bonus.type === round.type) 
+                            
+                            if (winnerBonus) {
+                                const bonusEmbed    = this._genEmbed({
+                                    title       : `ET ÇA TAUNT, EN PLUS !`,
+                                    thumbnail   : winnerMember.user.avatarURL({ format: 'jpg', dynamic: true, size: 128 }),
+                                    color       : winner.color === 'red' ? '#fa1212' : '#1da1f2',
+                                    description : winnerBonus.bonus.description.replace('{duellist}', loser.duellist.displayName).replace('{donator}', winnerBonus.donorName).replace('{opponent}', winner.duellist.displayName),
+                                    image       : winnerBonus.bonus.image
+                                })
+                                setTimeout(() => {
+                                    message.channel
+                                    .send(bonusEmbed)
                                     .then(() => {
-                                        this._newRoundOrEndGame(message, duelWithWinner)
+                                        const duelWithWinner = this.duelManager.newRoundDone(duel, round, winnerBonus)
+                                        setTimeout(() => {
+                                            message.channel.send(this._genEndRoundEmbed(duelWithWinner))
+                                                .then(() => {
+                                                    this._newRoundOrEndGame(message, duelWithWinner)
+                                                })
+                                                .catch(console.log)
+                                        })
                                     })
                                     .catch(console.log)
-                            }, 2000)
+                                }, 2000)
+                            } else {
+                                const duelWithWinner = this.duelManager.newRoundDone(duel, round)
+                                setTimeout(() => {
+                                    message.channel.send(this._genEndRoundEmbed(duelWithWinner))
+                                        .then(() => {
+                                            this._newRoundOrEndGame(message, duelWithWinner)
+                                        })
+                                        .catch(console.log)
+                                }, 2000)
+                            }
                         }
-                    }
-                })
-        }, 500)
+                    })
+            })
     }
 
     _genEmbed (args) {
@@ -677,15 +678,8 @@ class CommandManager {
                                 setTimeout(() => message.channel.delete(), 10000)
                             })
                     })
-            } else {
-                message.channel.send(this._genEmbed({
-                    title       : '🔔 NOUVELLE MANCHE 🔔',
-                    description : 'Tapez `!duel attaquer` pour lancer les hostilités !'
-                }))
-            }
-            duelWithWinner.duel.busy = false
-            this.duelManager.update(duelWithWinner.duel)
-            this.duelManager.flush()
+            } else 
+                this._newRoundTimer(message, duelWithWinner.duel)
         }, 2000)
     }
 
@@ -712,7 +706,7 @@ class CommandManager {
                         allow   : ['SEND_MESSAGES', 'MANAGE_MESSAGES', 'EMBED_LINKS', 'ATTACH_FILES', 'READ_MESSAGE_HISTORY'] 
                     },
                 ],
-                rateLimitPerUser: 5
+                rateLimitPerUser: 1
             })
             .then(channel => {
                 message.channel.send(`C'est parti pour un nouveau duel entre **${offender.duelUser.displayName}** et **${defender.duelUser.displayName}** dans ${channel} ! Tout le monde peut réagir, et les autres duellistes peuvent faire des dons d'équipement !`)
@@ -727,7 +721,7 @@ class CommandManager {
                 channel.send(`${offender.discordUser}, ${defender.discordUser} !`)
                     .then(() => {
                         channel.send(welcomeEmbed)
-                            .then(() => {
+                            .then((welcomeMessage) => {
                                 duel.duellists.forEach(d => {
                                     const thisDiscordUser = d.duellist.id === offender.discordUser.id ? offender.discordUser : defender.discordUser
                                     
@@ -753,13 +747,10 @@ class CommandManager {
                                         .then(msg => {
                                             msg.react('💌')
                                             const filter    = (reaction, user) => reaction.emoji.name === '💌' && [this.client.user.id, offender.duelUser.id, defender.duelUser.id].indexOf(user.id) < 0
-                                            const collector = msg.createReactionCollector(() => true, { time: 5 * 60000 })
+                                            const collector = msg.createReactionCollector(filter, { time: 5 * 60000 })
                                             collector.on('collect', async (reaction, reactionCollector) => {
                                                 const user      = reaction.users.cache.last()
-        
-                                                if (user.id === this.client.user.id)
-                                                    return 
-        
+
                                                 let donator     = this.duellistManager.getById(user.id)
                                                 if (!donator) {
                                                     const member    = await this.guild.members.fetch(user.id)
@@ -785,10 +776,43 @@ class CommandManager {
                                             })
                                         })  
                                 })
+                                setTimeout(() => {
+                                    this._newRoundTimer(welcomeMessage, duel)
+                                }, 1000)
                             })
                             .catch(console.log)
                     })
                     .catch(console.log)
+            })
+    }
+
+    _newRoundTimer (message, duel, remainingSeconds = 5) {
+        let embed = this._genEmbed({
+            title       : `⏳ NOUVELLE MANCHE DANS ${remainingSeconds}S ⏳`,
+            description : 'Tenez-vous prêt à dégaîner !'
+        })
+        message.channel.send(embed)
+            .then(timerMsg => {
+                const itvl = setInterval(() => {
+                    if (remainingSeconds > 1) {
+                        remainingSeconds -= 1
+                        embed = this._genEmbed({
+                            title       : `⏳ NOUVELLE MANCHE DANS ${remainingSeconds}S ⏳`,
+                            description : 'Tenez-vous prêt à dégaîner !'
+                        })
+                    } else {
+                        clearInterval(itvl)
+                        duel.busy = false 
+                        this.duelManager.update(duel)
+                        this.duelManager.flush()
+                        embed = this._genEmbed({
+                            color       : '#43b581', 
+                            title       : `🔔 NOUVELLE MANCHE 🔔`,
+                            description : 'Tapez `!duel` pour lancer les hostilités !'
+                        })
+                    }
+                    timerMsg.edit(embed)
+                }, 1000)
             })
     }
 }
