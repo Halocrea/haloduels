@@ -277,7 +277,7 @@ class CommandManager {
                                     })
                                     const winnerDiscordUser = await this.client.users.fetch(winner.duellist.id)
                                     this.mainChannel.send(this._genEmbed({
-                                        title       : `${looser.duellist.displayName.toUpperCase()} A ragequit SON DUEL CONTRE ${winner.duellist.displayName.toUpperCase()} !`,
+                                        title       : `${looser.duellist.displayName.toUpperCase()} A RAGEQUIT SON DUEL CONTRE ${winner.duellist.displayName.toUpperCase()} !`,
                                         color       : '#43b581',
                                         thumbnail   : winnerDiscordUser.avatarURL({ format: 'jpg', dynamic: true, size: 128 }),
                                         description : `${looser.duellist.displayName} n'a pas su résister à la pression dans son combat contre ${winner.duellist.displayName} et a pris la fuite !`,
@@ -635,10 +635,13 @@ class CommandManager {
                 duelWithWinner.duel.duellists.forEach(d => {
                     if (d.duellist.id !== duelWinner)
                         d.duellist.stats.defeats += 1
-                    else 
+                    else {
                         d.duellist.stats.victories += 1
-                    
-                    d.duellist.status = STATUS.IDLE
+                        const bonuses           = d.duellist.setDailyGifts()
+                        d.duellist.dailyGifts   = [...d.duellist.dailyGifts, ...bonuses]
+                    }
+                    d.duellist.status   = STATUS.IDLE
+                    d.duellist.lastDuel = new Date()
                     this.duellistManager.update(d.duellist)
                 })
                 this.duellistManager.flush()
@@ -665,7 +668,7 @@ class CommandManager {
                     title       : `${winner.duellist.displayName.toUpperCase()} A REMPORTÉ SON DUEL CONTRE ${looser.duellist.displayName.toUpperCase()} !`,
                     color       : '#43b581',
                     thumbnail   : winnerDiscordUser.avatarURL({ format: 'jpg', dynamic: true, size: 128 }),
-                    description : `${winner.duellist.displayName} a su imposer sa grosse chance dans ce combat acharné contre ${looser.duellist.displayName} ; bravo à lui !`,
+                    description : `${winner.duellist.displayName} a su imposer sa grosse chance dans ce combat acharné contre ${looser.duellist.displayName} ; pour le féciliter, il reçoit 2 équipements-bonus dont il peut faire don à n'importe qui !`,
                     image       : endResultGif[Math.floor(Math.random() * endResultGif.length)], 
                     fields,
                 })
@@ -757,7 +760,7 @@ class CommandManager {
                                                     donator         = this.duellistManager.addTmp(member)
                                                 }
                                                 if (donator && donator.dailyGifts.length > 0) {
-                                                    duel.bonuses.push({
+                                                    duel.bonuses.push({  
                                                         receiverId  : d.duellist.id,
                                                         donorName   : donator.displayName,   
                                                         bonus       : JSON.parse(JSON.stringify(donator.dailyGifts[0]))

@@ -113,7 +113,9 @@ class DuelManager {
                         break
                 }
             }
-            const bonusIdx = duel.bonuses.findIndex(b => b === bonus)
+            
+            const bonusIdx = duel.bonuses.findIndex(b => b.id === bonus.id)
+            
             if (bonusIdx) {
                 duel.bonuses.splice(bonusIdx, 1)
             }

@@ -39,7 +39,7 @@ class Duellist {
     setDailyGifts () {
         const gifts = []
         for (let i = 0; i < 2; i++) 
-            gifts.push(bonuses[Math.floor(Math.random() * bonuses.length)])
+            gifts.push(Object.assign({ id: Math.random().toString(16).slice(2) }, bonuses[Math.floor(Math.random() * bonuses.length)]))
 
         return gifts
     }

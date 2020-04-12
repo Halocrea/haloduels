@@ -45,6 +45,7 @@ class Duel {
         const noTauntBonuses = bonuses.filter(b => b.worksIf === RESULT.DEFEAT)
         for (let i = 0; i < this.duellists.length; i++) 
             gifts.push({
+                id          : Math.random().toString(16).slice(2),
                 receiverId  : this.duellists[i].duellist.id,
                 donorName   : 'la chance',
                 bonus       : noTauntBonuses[Math.floor(Math.random() * noTauntBonuses.length)]
