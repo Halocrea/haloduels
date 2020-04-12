@@ -464,6 +464,15 @@ class CommandManager {
             })
     }
 
+    resetDailyGiftsForAll () {
+        const duellists = this.duellistManager.all()
+        duellists.forEach(d => {
+            d.dailyGifts = d.setDailyGifts()
+            duellistManager.update(d)
+        })
+        this.duellistManager.flush()
+    }
+
     async attack (message) {
         const duel = this.duelManager.getById(message.channel.id)
         if (!duel)

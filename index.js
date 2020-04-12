@@ -17,15 +17,8 @@ client.on('message', async message => {
         commandManager.handle(message)
     
     if (currentDay !== (new Date()).getDay()) {
-        const duellistManager   = new DuellistManager()
-        currentDay              = new Date().getDay()
-        const duellists         = duellistManager.all()
-        
-        duellists.forEach(d => {
-            d.dailyGifts = d.setDailyGifts()
-            duellistManager.update(d)
-        })
-        duellistManager.flush()
+        currentDay     = new Date().getDay()
+        commandManager = commandManager.resetDailyGiftsForAll()
         client.guilds.resolve(process.env.GUILD_ID).channels.resolve(process.env.MAIN_CHANNEL_ID)
             .send('Hop ! Nouvelle journée, nouvelle fournée de bonus que vous pouvez donner !')
     }  
