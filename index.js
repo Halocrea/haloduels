@@ -17,8 +17,8 @@ client.on('message', async message => {
         commandManager.handle(message)
     
     if (currentDay !== (new Date()).getDay()) {
-        currentDay     = new Date().getDay()
-        commandManager = commandManager.resetDailyGiftsForAll()
+        currentDay = new Date().getDay()
+        commandManager.resetDailyGiftsForAll()
         client.guilds.resolve(process.env.GUILD_ID).channels.resolve(process.env.MAIN_CHANNEL_ID)
             .send('Hop ! Nouvelle journée, nouvelle fournée de bonus que vous pouvez donner !')
     }  
