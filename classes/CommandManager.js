@@ -468,7 +468,7 @@ class CommandManager {
         const duellists = this.duellistManager.all()
         duellists.forEach(d => {
             d.dailyGifts = [...d.dailyGifts, ...d.setDailyGifts()]
-            duellistManager.update(d)
+            this.duellistManager.update(d)
         })
         this.duellistManager.flush()
     }
