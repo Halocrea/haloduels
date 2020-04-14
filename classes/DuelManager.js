@@ -116,9 +116,8 @@ class DuelManager {
             
             const bonusIdx = duel.bonuses.findIndex(b => b.id === bonus.id)
             
-            if (bonusIdx) {
+            if (bonusIdx >= 0) 
                 duel.bonuses.splice(bonusIdx, 1)
-            }
         }
 
         duel.count.rounds += 1

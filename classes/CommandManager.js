@@ -197,11 +197,11 @@ class CommandManager {
             let ratio   = '' 
             const total = duellist.stats.victories + duellist.stats.defeats
             if (total > 0)
-                ratio = `${Math.round((duellist.stats.victories/(total))*10000)/100}% de victoires`
+                ratio = `${Math.round((duellist.stats.victories/(total))*10000)/100}%`
             else 
                 ratio = `pas de combat`
 
-            fields.push({ name: `**${rank} ${duellist.displayName}**`, value: `${ratio} | ${total} duel${total > 1 ? 's' : ''}` })
+            fields.push({ name: `**${rank} ${duellist.displayName}**`, value: `${duellist.stats.victories} victoire${duellist.stats.victories > 1 ? 's' : ''} | ${total} duel${total > 1 ? 's' : ''} (${ratio})` })
         })
 
         try {
@@ -726,7 +726,7 @@ class CommandManager {
                 this.duelManager.flush() 
                 const welcomeEmbed = this._genEmbed({
                     title       : 'C\'EST L\'HEURE DU DUEL !',
-                    description : `${offender.discordUser}, ${defender.discordUser}, c'est ici que vous allez déterminer lequel de vous deux est le meilleur ... Dans un jeu totalement aléatoire en 4 manches gagnantes ! \n\nPour jouer, rien de plus simple : tapez \`!duel attaquer\`, et priez pour que le destin vous soit favorable. Bonne chance ! \n\n**POUR LES SPECTATEURS**\nSi vous vous êtes enrolés, vous pouvez faire don d'un bonus à l'un des duellistes, dans la limite de 2 par jour. Pour ce faire, réagissez avec 💌 au message d'introduction de votre copain.`,
+                    description : `${offender.discordUser}, ${defender.discordUser}, c'est ici que vous allez déterminer lequel de vous deux est le meilleur ... Dans un jeu totalement aléatoire en 4 manches gagnantes ! \n\nPour jouer, suivez les instructions en début de manche, et priez pour que le destin vous soit favorable. Bonne chance ! \n\n**POUR LES SPECTATEURS**\nVous pouvez faire don d'un bonus à l'un des duellistes. Pour ce faire, réagissez avec 💌 au message d'intro de votre copain.`,
                     image       : newDuelImg[Math.floor(Math.random() * newDuelImg.length)],
                     thumbnail   : 'https://i.imgur.com/G6Bpy9x.png', 
                 })
