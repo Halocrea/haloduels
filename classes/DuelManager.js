@@ -4,7 +4,7 @@ const fs                        = require('fs')
 const statements                = require('./../objects/statements')
 const toolsOfDestruction        = require('./../objects/toolsOfDestruction')
 const { TYPE, STATUS, RESULT }  = require('./../objects/DUEL_ENUMS')
-const Duel                      = require('./Duel') 
+const Duel                      = require('../schemas/Duel') 
 
 class DuelManager {
     constructor () {

@@ -39,7 +39,7 @@ module.exports = [
     {
         type        : TYPE.SPECIAL,
         worksIf     : RESULT.DEFEAT, 
-        description : 'Ah non, {duellist} a laggé à cause de la connexion pourrie de **{donator}**, et en fait tout va bien pour lui.',
+        description : 'Ah non, {duellist} a laggé à cause de la connexion pourrie de **{donator}**, et en fait tout va bien pour lui⋅elle.',
         image       : 'https://i.imgur.com/BXNEURR.gif',
         effect      : 1
     },
@@ -53,7 +53,7 @@ module.exports = [
     {
         type        : TYPE.WEAPON,
         worksIf     : RESULT.VICTORY, 
-        description : '{duellist} et {donator} font preuve de fair-play et vont teabagger {opponent}. Ça n\'a aucun impact sur le duel, mais ils le font quand même.',
+        description : '{duellist} et {donator} font preuve de fair-play et vont teabagger {opponent}. Ça n\'a aucun impact sur le duel, mais ils⋅elles le font quand même.',
         image       : 'https://i.imgur.com/z6PuA75.gif',
         effect      : 0
     },

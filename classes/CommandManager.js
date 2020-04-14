@@ -467,7 +467,7 @@ class CommandManager {
     resetDailyGiftsForAll () {
         const duellists = this.duellistManager.all()
         duellists.forEach(d => {
-            d.dailyGifts = [...d.dailyGifts, ...d.setDailyGifts()]
+            d.dailyGifts = [...d.dailyGifts, ...d.genDailyGifts()]
             this.duellistManager.update(d)
         })
         this.duellistManager.flush()
@@ -534,7 +534,7 @@ class CommandManager {
                                     title       : `ET ÇA TAUNT, EN PLUS !`,
                                     thumbnail   : winnerMember.user.avatarURL({ format: 'jpg', dynamic: true, size: 128 }),
                                     color       : winner.color === 'red' ? '#fa1212' : '#1da1f2',
-                                    description : winnerBonus.bonus.description.replace('{duellist}', loser.duellist.displayName).replace('{donator}', winnerBonus.donorName).replace('{opponent}', winner.duellist.displayName),
+                                    description : winnerBonus.bonus.description.replace('{duellist}', winner.duellist.displayName).replace('{donator}', winnerBonus.donorName).replace('{opponent}', loser.duellist.displayName),
                                     image       : winnerBonus.bonus.image
                                 })
                                 setTimeout(() => {
@@ -646,7 +646,7 @@ class CommandManager {
                         d.duellist.stats.defeats += 1
                     else {
                         d.duellist.stats.victories += 1
-                        const bonuses           = d.duellist.setDailyGifts()
+                        const bonuses           = d.duellist.genDailyGifts()
                         d.duellist.dailyGifts   = [...d.duellist.dailyGifts, ...bonuses]
                     }
                     d.duellist.status   = STATUS.IDLE
@@ -677,7 +677,7 @@ class CommandManager {
                     title       : `${winner.duellist.displayName.toUpperCase()} A REMPORTÉ SON DUEL CONTRE ${looser.duellist.displayName.toUpperCase()} !`,
                     color       : '#43b581',
                     thumbnail   : winnerDiscordUser.avatarURL({ format: 'jpg', dynamic: true, size: 128 }),
-                    description : `${winner.duellist.displayName} a su imposer sa grosse chance dans ce combat acharné contre ${looser.duellist.displayName} ; pour le féciliter, il reçoit 2 équipements-bonus dont il peut faire don à n'importe qui !`,
+                    description : `${winner.duellist.displayName} a su imposer sa grosse chance dans ce combat acharné contre ${looser.duellist.displayName} ; pour saluer cette prouesse, il⋅elle reçoit 2 équipements-bonus dont il⋅elle peut faire don à n'importe qui !`,
                     image       : endResultGif[Math.floor(Math.random() * endResultGif.length)], 
                     fields,
                 })

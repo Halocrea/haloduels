@@ -1,5 +1,5 @@
 const fs                = require('fs')
-const Duellist          = require ('./Duellist')
+const Duellist          = require ('../schemas/Duellist')
 
 class DuellistManager {
     constructor () {

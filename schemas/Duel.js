@@ -1,7 +1,6 @@
-const bonuses           = require('./../objects/bonuses')
-const DuellistManager   = require ('./DuellistManager')
-const statements        = require('./../objects/statements')
-const { RESULT, STATUS }= require('./../objects/DUEL_ENUMS')
+const bonuses           = require('../objects/bonuses')
+const DuellistManager   = require ('../classes/DuellistManager')
+const { RESULT, STATUS }= require('../objects/DUEL_ENUMS')
 
 class Duel {
     constructor (args) {
@@ -36,27 +35,17 @@ class Duel {
             this.bonuses.splice(index, 1)
     }
 
-    setBonus (bonus) {
-        this.bonuses.push(bonus)
-    }
-
     setFate () {
         const gifts = []
         const noTauntBonuses = bonuses.filter(b => b.worksIf === RESULT.DEFEAT)
         for (let i = 0; i < this.duellists.length; i++) 
             gifts.push({
-                id          : Math.random().toString(16).slice(2),
                 receiverId  : this.duellists[i].duellist.id,
                 donorName   : 'la chance',
-                bonus       : noTauntBonuses[Math.floor(Math.random() * noTauntBonuses.length)]
+                bonus       : Object.assign({ id: Math.random().toString(16).slice(2) }, noTauntBonuses[Math.floor(Math.random() * noTauntBonuses.length)])
             })
 
         return gifts
-    }
-
-    newRoundDone (winnerId) {
-        this.count.rounds += 1
-        this.roundWinners.push(winnerId)
     }
 
     _serialize () {
