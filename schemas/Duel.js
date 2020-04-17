@@ -9,7 +9,8 @@ class Duel {
         this.id         = args.id // channelId
         this.name       = args.name 
         
-        this.startedAt  = args.startedAt || new Date()
+        this.startedAt  = new Date(args.startedAt) || new Date()
+        this.updatedAt  = new Date(args.updatedAt) || new Date()
         this.hasEnded   = args.hasEnded || false
         this.busy       = args.busy || false
         this.count      = args.count || {
@@ -52,14 +53,15 @@ class Duel {
 
     _serialize () {
         const duel = {
+            bonuses     : this.bonuses, 
+            busy        : this.busy,
+            count       : this.count, 
+            duellists   : [], 
+            hasEnded    : this.hasEnded, 
             id          : this.id, 
             name        : this.name, 
-            duellists   : [], 
-            bonuses     : this.bonuses, 
             startedAt   : this.startedAt, 
-            hasEnded    : this.hasEnded, 
-            count       : this.count, 
-            busy        : this.busy
+            updatedAt   : this.updatedAt
         }
         this.duellists.forEach(d => duel.duellists.push({ color: d.color, duellist: d.duellist.id }))
 

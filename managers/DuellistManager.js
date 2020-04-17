@@ -43,10 +43,20 @@ class DuellistManager {
 
     flush () {
         try {
-            const duellistsToSave   = []
-            for (let i = 0; i < this.duellists.length; i++) 
-                duellistsToSave.push(this.duellists[i]._serialize())
-            
+            const save              = fs.readFileSync(this.filePath, 'utf8')
+            const duellistsJSON     = JSON.parse(save) 
+            let duellistsToSave     = []
+            for (let i = 0; i < this.duellists.length; i++) {
+                const inSaveDuellistIndex = duellistsJSON.findIndex(d => d.id === this.duellists[i].id)
+                
+                if ((inSaveDuellistIndex >= 0 && new Date(duellistsJSON[inSaveDuellistIndex].updatedAt) < this.duellists[i].updatedAt) ||
+                    inSaveDuellistIndex < 0
+                )
+                    duellistsToSave.push(this.duellists[i]._serialize())
+                else 
+                duellistsToSave.push(duellistsJSON[inSaveDuellistIndex])
+            }
+            duellistsToSave = [...duellistsToSave, ...duellistsJSON.filter(d => duellistsToSave.findIndex(f => f.id === d.id) < 0)]
             fs.writeFileSync(this.filePath, JSON.stringify(duellistsToSave), 'utf8')
         } catch (err) {
             console.log(err)
@@ -76,6 +86,8 @@ class DuellistManager {
             if (this.duellists[index].hasOwnProperty(k)) 
                 this.duellists[index][k] = args[k]
         }
+
+        this.duellists[index].updatedAt = new Date()
 
         return this.duellists[index]
     }

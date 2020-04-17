@@ -142,7 +142,7 @@ class DuelCommands {
         if (!defenderDuellist) {
             defenderDuellist = this.duellistManager.addTmp(defenderMember)
         }
-        if (defenderDuellist.status === STATUS.FIGHTING) 
+        if (defenderDuellist.status !== STATUS.IDLE) 
             return message.channel.send(this.$t.get('errorOpponentInADuel'))
         
         if (offender.id === defenderMember.id) 
@@ -237,7 +237,7 @@ class DuelCommands {
     async close (message, arg) {
         const discordGuild = message.guild
         const member = await discordGuild.members.fetch(message.author)
-        if (!member.roles.cache.some(r => process.env.SUPER_ROLES.split(',').includes(r.id))) 
+        if (!member.roles.cache.some(r => this.duelGuild.superRoles.includes(r.id)) && !member.hasPermission('ADMINISTRATOR')) 
             return message.channel.send(this.$t.get('errorNotAllowed', { prefix: this.duelGuild.prefix, cmdQuit: this.$t.get('cmdQuit') }))
         
         const channelId         = arg.replace('<#', '').replace('>', '').trim()

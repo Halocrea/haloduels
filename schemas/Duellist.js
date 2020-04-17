@@ -5,7 +5,7 @@ class Duellist {
     constructor (args, tmp = false) {
         this.dailyGifts     = args.dailyGifts || this.genDailyGifts()
         this.displayName    = args.displayName
-        this.enroledAt      = args.enroledAt || new Date()
+        this.enroledAt      = new Date(args.enroledAt) || new Date()
         this.id             = args.id
         this.lastDuel       = args.lastDuel || null
         this.stats          = args.stats || {
@@ -14,6 +14,7 @@ class Duellist {
         }
         this.status         = args.status || STATUS.IDLE
         this.tmp            = args.tmp || tmp
+        this.updatedAt      = new Date(args.updatedAt) || new Date()
 
     }
 
@@ -34,7 +35,8 @@ class Duellist {
             lastDuel    : this.lastDuel, 
             stats       : this.stats, 
             status      : this.status, 
-            tmp         : this.tmp
+            tmp         : this.tmp,
+            updatedAt   : this.updatedAt
         }
     }
 }

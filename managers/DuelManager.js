@@ -48,10 +48,20 @@ class DuelManager {
 
     flush () {
         try {
-            const duelsToSave = []
-            for (let i = 0; i < this.duels.length; i++) 
-                duelsToSave.push(this.duels[i]._serialize())
-            
+            const save          = fs.readFileSync(this.filePath, 'utf8')
+            const duelsJSON     = JSON.parse(save) 
+            let duelsToSave     = []
+            for (let i = 0; i < this.duels.length; i++) {
+                const inSaveDuelIndex = duelsJSON.findIndex(d => d.id === this.duels[i].id)
+                
+                if ((inSaveDuelIndex >= 0 && new Date(duelsJSON[inSaveDuelIndex].updatedAt) < this.duels[i].updatedAt) ||
+                    inSaveDuelIndex < 0
+                )
+                    duelsToSave.push(this.duels[i]._serialize())
+                else 
+                    duelsToSave.push(duelsJSON[inSaveDuelIndex])
+            }
+            duelsToSave = [...duelsToSave, ...duelsJSON.filter(d => duelsToSave.findIndex(f => f.id === d.id) < 0)]
             fs.writeFileSync(this.filePath, JSON.stringify(duelsToSave), 'utf8')
         } catch (err) {
             console.log(err)
@@ -137,6 +147,8 @@ class DuelManager {
             if (this.duels[index].hasOwnProperty(k)) 
                 this.duels[index][k] = args[k]
         }
+
+        this.duels[index].updatedAt = new Date()
     }
     
     _getRandomRoundType () {
