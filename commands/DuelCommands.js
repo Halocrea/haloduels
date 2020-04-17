@@ -193,7 +193,7 @@ class DuelCommands {
                                         thumbnail   : defenderMember.user.avatarURL({ format: 'jpg', dynamic: true, size: 128 }), 
                                         title       : this.$t.get('newChallenger'), 
                                         fields      : [
-                                            { name: this.$t.get('howToPlay'), value: !!rulesChannel ? this.$t.get('howtoPlayDescRulesChan', { rulesChannel }) : this.$t.get('howToPlayDesc', { prefix: this.duelGuild.prefix, cmdHelp: this.$t.get('cmdHelp') }) },
+                                            { name: this.$t.get('howToPlay'), value: !!rulesChannel ? this.$t.get('howToPlayDescRulesChan', { rulesChannel }) : this.$t.get('howToPlayDesc', { prefix: this.duelGuild.prefix, cmdHelp: this.$t.get('cmdHelp') }) },
                                             { name: this.$t.get('whereToPlay'), value: this.$t.get('whereToPlayDesc', { mainChannel }) }
                                         ]
                                     })
@@ -286,7 +286,7 @@ class DuelCommands {
                 thumbnail   : message.author.avatarURL({ format: 'jpg', dynamic: true, size: 128 }), 
                 title       : this.$t.get('newChallenger'), 
                 fields      : [
-                    { name: this.$t.get('howToPlay'), value: !!rulesChannel ? this.$t.get('howtoPlayDescRulesChan', { rulesChannel }) : this.$t.get('howToPlayDesc', { prefix: this.duelGuild.prefix, cmdHelp: this.$t.get('cmdHelp') }) },
+                    { name: this.$t.get('howToPlay'), value: !!rulesChannel ? this.$t.get('howToPlayDescRulesChan', { rulesChannel }) : this.$t.get('howToPlayDesc', { prefix: this.duelGuild.prefix, cmdHelp: this.$t.get('cmdHelp') }) },
                     { name: this.$t.get('whereToPlay'), value: this.$t.get('whereToPlayDesc', { mainChannel }) }
                 ]
             })
