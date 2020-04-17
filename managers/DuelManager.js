@@ -1,18 +1,22 @@
 require('dotenv').config()
 
-const fs                        = require('fs')
-const statements                = require('./../objects/statements')
-const toolsOfDestruction        = require('./../objects/toolsOfDestruction')
-const { TYPE, STATUS, RESULT }  = require('./../objects/DUEL_ENUMS')
-const Duel                      = require('../schemas/Duel') 
+const fs                    = require('fs')
+const Statements            = require('../utils/Statements')
+const toolsOfDestruction    = require('./../utils/toolsOfDestruction')
+const { TYPE, RESULT }      = require('./../utils/DUEL_ENUMS')
+const Duel                  = require('./../schemas/Duel') 
 
 class DuelManager {
-    constructor () {
-        const save      = fs.readFileSync('saves/duels.json', 'utf8')
-        const duelsJSON = JSON.parse(save) 
+    constructor (guild, translations) {
+        this.guild      = guild
+        this.filePath   = `saves/duels-${guild.id}.json`
         this.duels      = []
+        this.$t         = translations
+        const save      = fs.readFileSync(this.filePath, 'utf8')
+        const duelsJSON = JSON.parse(save) 
+        
         for (const i in duelsJSON) if (!duelsJSON[i].hasEnded)
-            this.duels.push(new Duel(duelsJSON[i]))
+            this.duels.push(new Duel(duelsJSON[i], guild))
     }
 
     all () {
@@ -28,7 +32,7 @@ class DuelManager {
                 { color: 'blue', duellist: defender }
             ],
             busy        : true
-        })
+        }, this.guild)
         this.duels.push(duel)
 
         return duel
@@ -39,15 +43,7 @@ class DuelManager {
         if (index < 0) 
             return 
         
-        try {
-            // const save      = fs.readFileSync('saves/archives-duels.json', 'utf8')
-            // const duelsJSON = JSON.parse(save) 
-            // duelsJSON.push(this.duels[index])
-            // fs.writeFileSync('saves/archives-duels.json', JSON.stringify(duelsJSON), 'utf8')
-            this.duels.splice(index, 1)
-        } catch (error) {
-            throw new Error('Je n\'ai pas pu archiver le duel')
-        }
+        this.duels.splice(index, 1)
     }
 
     flush () {
@@ -56,7 +52,7 @@ class DuelManager {
             for (let i = 0; i < this.duels.length; i++) 
                 duelsToSave.push(this.duels[i]._serialize())
             
-            fs.writeFileSync('saves/duels.json', JSON.stringify(duelsToSave), 'utf8')
+            fs.writeFileSync(this.filePath, JSON.stringify(duelsToSave), 'utf8')
         } catch (err) {
             console.log(err)
         }
@@ -65,7 +61,6 @@ class DuelManager {
     getById(id) {
         return this.duels.find(d => d.id === id)
     }
-
     
     generateNewRound (duel, offenderId) {
         const headsOrTails  = [0, 1][Math.floor(Math.random() * 2)] // 0 = victory for offender, 1 = defeat for offender
@@ -75,18 +70,18 @@ class DuelManager {
         const tool          = this._getRandomToolOfDestruction(type)
         const offender      = duel.duellists.find(d => d.duellist.id === offenderId)
         const defender      = duel.duellists.find(d => d.duellist.id !== offenderId)
-        
+        const statements    = new Statements(this.$t)
         switch (type) {
             case TYPE.WEAPON:
             case TYPE.VEHICLE:
             case TYPE.EXPLOSIVE:
                 imageURL    = tool.image
-                result      = `${offender.duellist.displayName} ${statements[headsOrTails][type]().replace('{opponent}', defender.duellist.displayName)} ${tool.description}.`
+                result      = `${offender.duellist.displayName} ${statements.get(headsOrTails, type, defender.duellist.displayName)} ${this.$t.get(tool.key)}.`
                 break 
             case TYPE.SPECIAL:
-                let statement   = statements[headsOrTails][type]()
-                imageURL        = statement.match(/<!(.*)>/).pop().replace('<!', '').replace('>', '')
-                result          = `${offender.duellist.displayName} ${statement.replace(`<!${imageURL}>`, '').replace('{opponent}', defender.duellist.displayName)}.`
+                let st          = statements.get(headsOrTails, type, defender.duellist.displayName)
+                imageURL        = st.match(/<!(.*)>/).pop().replace('<!', '').replace('>', '')
+                result          = `${offender.duellist.displayName} ${st.replace(`<!${imageURL}>`, '')}.`
                 break     
         }
 

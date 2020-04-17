@@ -2,10 +2,13 @@ const fs                = require('fs')
 const Duellist          = require ('../schemas/Duellist')
 
 class DuellistManager {
-    constructor () {
-        const save          = fs.readFileSync('saves/duellists.json', 'utf8')
-        const duellistsJSON = JSON.parse(save) 
+    constructor (guild) {
+        this.guild          = guild
+        this.filePath       = `saves/duellists-${guild.id}.json`
         this.duellists      = []
+        const save          = fs.readFileSync(this.filePath, 'utf8')
+        const duellistsJSON = JSON.parse(save) 
+        
         for (const i in duellistsJSON)
             this.duellists.push(new Duellist(duellistsJSON[i]))
     }
@@ -17,7 +20,7 @@ class DuellistManager {
             duellist = new Duellist(member)
             this.duellists.push(duellist)
         } else 
-            throw new Error('Vous vous êtes déjà enrôlé ! Pour prendre votre retraite, tapez `!duel quitter`.') 
+            duellist = this.duellists[index]
 
         return duellist
     }
@@ -29,7 +32,7 @@ class DuellistManager {
             duellist = new Duellist(member, true)
             this.duellists.push(duellist)
         } else 
-            throw new Error('Vous vous êtes déjà enrôlé ! Pour prendre votre retraite, tapez `!duel quitter`.') 
+            duellist = this.duellists[index]
 
         return duellist
     }
@@ -44,7 +47,7 @@ class DuellistManager {
             for (let i = 0; i < this.duellists.length; i++) 
                 duellistsToSave.push(this.duellists[i]._serialize())
             
-            fs.writeFileSync('saves/duellists.json', JSON.stringify(duellistsToSave), 'utf8')
+            fs.writeFileSync(this.filePath, JSON.stringify(duellistsToSave), 'utf8')
         } catch (err) {
             console.log(err)
         }
@@ -64,8 +67,7 @@ class DuellistManager {
             const duellist  = this.duellists[index]
             this.duellists.splice(index, 1)
             return duellist
-        } else 
-            throw new Error('Mais ! Tu n\'étais pas enrôlé, petit farceur. Tape `!duel s\'enrôler` pour rejoindre la partie.')
+        } 
     }
 
     update (args) {
