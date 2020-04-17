@@ -18,5 +18,5 @@ yarn-error.log*
 .DS_Store
 client/.DS_Store
 
-saves
+saves/*.*
 !saves/.gitkeep
