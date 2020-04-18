@@ -1,7 +1,8 @@
 require('dotenv').config()
 
-const DuelCommands              = require('./../commands/DuelCommands')
-const I18N                      = require('./../utils/I18N')
+const DuelCommands      = require('./../commands/DuelCommands')
+const generateEmbed     = require('./../utils/generateEmbed')
+const I18N              = require('./../utils/I18N')
 
 class CommandManager {
     constructor (client, guild) {
@@ -24,9 +25,7 @@ class CommandManager {
 
         switch (cmd) {
             case this.$t.get('cmdHelp'): 
-                message.channel
-                    .send(`Les règles du jeu, commandes disponibles et autres informations se trouvent dans le channel ${this.mainChannel}.`)
-                    .catch(console.log)
+                this.help(message)
                 break 
             case this.$t.get('cmdAttack'):
                 this.duelCommands.attack(message)
@@ -75,6 +74,26 @@ class CommandManager {
                 }
                 break
         }
+    }
+
+    help (message) {
+        const commands = Object.keys(this.$t.translations)
+            .filter(key => key.startsWith('cmd'))
+            .reduce((obj, key) => {
+                obj[key] = this.$t.translations[key]
+                return obj
+            }, {})
+        
+        message.channel.send(generateEmbed({
+            color       : '#43b581',
+            description : this.$t.get('helpText', Object.assign({
+                prefix          : this.duelGuild.prefix,
+                discordInvite   : 'https://discord.gg/74UAq84'
+            }, commands)),
+            footer      : 'made with ♥️ by Halo Création',
+            thumbnail   : 'https://i.imgur.com/JdNIPOk.png',
+            title       : this.$t.get('helpTitle')
+        }))
     }
 
     resetDailyGiftsForAll () {
