@@ -44,6 +44,17 @@ class DuelManager {
             return 
         
         this.duels.splice(index, 1)
+        try {
+            const save          = fs.readFileSync(this.filePath, 'utf8')
+            const duelsJSON     = JSON.parse(save) 
+            const inSaveDuelIndex   = duelsJSON.findIndex(d => d.id === duel.id)
+            if (inSaveDuelIndex >= 0) {
+                duelsJSON.splice(inSaveDuelIndex, 1)
+                fs.writeFileSync(this.filePath, JSON.stringify(duelsJSON), 'utf8')
+            }
+        } catch (err) {
+            console.log(err)
+        }
     }
 
     flush () {
@@ -119,10 +130,7 @@ class DuelManager {
                 }
             }
             
-            const bonusIdx = duel.bonuses.findIndex(b => b.id === bonus.id)
-            
-            if (bonusIdx >= 0) 
-                duel.bonuses.splice(bonusIdx, 1)
+            duel.removeBonus(bonus.bonus)
         }
 
         duel.count.rounds += 1

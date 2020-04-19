@@ -1,7 +1,15 @@
 require('dotenv').config()
 
 const Discord           = require('discord.js')
-const client            = new Discord.Client()
+const client            = new Discord.Client({
+    ws: { intents: [
+        'GUILDS', 
+        'GUILD_MESSAGES', 
+        'GUILD_MESSAGE_REACTIONS', 
+        'GUILD_INVITES', 
+        'GUILD_INTEGRATIONS'
+    ]}
+})
 const CommandManager    = require('./managers/CommandManager')
 const GuildManager      = require('./managers/GuildManager')
 const SetupManager      = require('./managers/SetupManager')
@@ -57,14 +65,24 @@ client.on('message', async message => {
         currentGuild.setupCompleted && 
         (new Date()).getDay() !== new Date(currentGuild.lastGiftsRenewal).getDay()
     ) {
-        const commandManager = new CommandManager(client, currentGuild)
-        commandManager.resetDailyGiftsForAll()
-        message.guild.channels.resolve(currentGuild.mainChanId)
-            .send('Hop ! Nouvelle journée, nouvelle fournée de bonus que vous pouvez donner !')
-        currentGuild.lastGiftsRenewal = new Date()
+        const commandManager            = new CommandManager(client, currentGuild)
+        currentGuild.lastGiftsRenewal   = new Date()
         guildManager.update(currentGuild)
         guildManager.flush()
+        commandManager.resetDailyGiftsForAll(message)
     }  
+})
+
+client.on('guildCreate', guild => {
+    client.users.fetch(process.env.MAINTAINER)
+        .then(u => u.send(`New guild joined: ${guild.name} (id: ${guild.id}). This guild has ${guild.memberCount} members!\nI'm serving ${client.guilds.cache.size} servers now.`))
+        .catch(console.log)
+})
+
+client.on('guildDelete', guild => {
+    client.users.fetch(process.env.MAINTAINER)
+        .then(u => u.send(`${guild.name} (id: ${guild.id}) removed me.\nI'm serving ${client.guilds.size} servers now.`))
+        .catch(console.log)
 })
 
 console.log('Sarting the bot...')

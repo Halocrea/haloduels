@@ -17,8 +17,8 @@ class GuildManager {
         else 
             this.guilds.push(guild)
 
-        const duelsFile     = fs.openSync(`saves/duels-${guild.id}.json`, 'a') 
-        const duellistsFile = fs.openSync(`saves/duellists-${guild.id}.json`, 'a')
+        const duelsFile     = fs.openSync(`saves/duels-${guild.id}.json`, 'w') 
+        const duellistsFile = fs.openSync(`saves/duellists-${guild.id}.json`, 'w')
         fs.writeFileSync(`saves/duels-${guild.id}.json`, '[]', 'utf8')
         fs.writeFileSync(`saves/duellists-${guild.id}.json`, '[]', 'utf8')
         fs.closeSync(duelsFile)
@@ -32,10 +32,20 @@ class GuildManager {
 
     flush () {
         try {
-            const guildsToSave = []
-            for (let i = 0; i < this.guilds.length; i++) 
-                guildsToSave.push(this.guilds[i]._serialize())
-            
+            const save          = fs.readFileSync('saves/guilds.json', 'utf8')
+            const guildsJSON    = JSON.parse(save) 
+            let guildsToSave    = []
+            for (let i = 0; i < this.guilds.length; i++) {
+                const inSaveGuildIndex = guildsJSON.findIndex(g => g.id === this.guilds[i].id)
+                if ((inSaveGuildIndex >= 0 && new Date(guildsJSON[inSaveGuildIndex].updatedAt) < this.guilds[i].updatedAt) ||
+                    inSaveGuildIndex < 0
+                )
+                    guildsToSave.push(this.guilds[i]._serialize())
+                else 
+                    guildsToSave.push(guildsJSON[inSaveGuildIndex])
+            }
+
+            guildsToSave = [...guildsToSave, ...guildsJSON.filter(d => guildsToSave.findIndex(f => f.id === d.id) < 0)]
             fs.writeFileSync('saves/guilds.json', JSON.stringify(guildsToSave), 'utf8')
         } catch (err) {
             console.log(err)
@@ -49,9 +59,22 @@ class GuildManager {
     remove (id) {
         const guildIdx = this.guilds.findIndex(g => g.id === id)
 
-        if (guildIdx >= 0) 
+        if (guildIdx >= 0) {
             this.guilds.splice(guildIdx, 1)
-
+            try {
+                fs.unlinkSync(`saves/duels-${id}.json`)
+                fs.unlinkSync(`saves/duellists-${id}.json`)
+                const save              = fs.readFileSync('saves/guilds.json', 'utf8')
+                const guildsJSON        = JSON.parse(save) 
+                const inSaveGuildIndex  = guildsJSON.findIndex(g => g.id === id)
+                if (inSaveGuildIndex >= 0) {
+                    guildsJSON.splice (inSaveGuildIndex, 1)
+                    fs.writeFileSync('saves/guilds.json', JSON.stringify(guildsJSON), 'utf8')
+                }
+            } catch (err) {
+                console.log(err)
+            }
+        }
         return guildIdx >= 0
     }
 
@@ -64,6 +87,8 @@ class GuildManager {
             if (this.guilds[index].hasOwnProperty(k)) 
                 this.guilds[index][k] = args[k]
         }
+
+        this.guilds[index].updatedAt = new Date()
     }
 }
 

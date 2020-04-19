@@ -72,12 +72,25 @@ class DuellistManager {
     }
 
     unset (id) {
+        let duellist    = { displayName: 'user' } 
         const index     = this.duellists.findIndex(d => d.id === id)
-        if (index >= 0) {
-            const duellist  = this.duellists[index]
+        if (index >= 0) { 
+            duellist = this.duellists[index]
             this.duellists.splice(index, 1)
-            return duellist
-        } 
+        }
+        try {
+            const save                  = fs.readFileSync(this.filePath, 'utf8')
+            const duellistsJSON         = JSON.parse(save) 
+            const inSaveDuellistIndex   = duellistsJSON.findIndex(d => d.id === id)
+            if (inSaveDuellistIndex >= 0) {
+                duellistsJSON.splice(inSaveDuellistIndex, 1)
+                fs.writeFileSync(this.filePath, JSON.stringify(duellistsJSON), 'utf8')
+            }
+        } catch (err) {
+            console.log(err)
+        }
+
+        return duellist
     }
 
     update (args) {

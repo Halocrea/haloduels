@@ -33,8 +33,8 @@ class Duel {
     }
 
     removeBonus (bonus) {
-        const index = this.bonuses.findIndex(b => b.id === bonus.id)
-        if (index) 
+        const index = this.bonuses.findIndex(b => b.bonus.id === bonus.id)
+        if (index >= 0) 
             this.bonuses.splice(index, 1)
     }
 

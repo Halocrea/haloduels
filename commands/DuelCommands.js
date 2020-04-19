@@ -16,7 +16,7 @@ const endResultGif = [
 ]
 
 class DuelCommands {
-    constructor(duelGuild, translations) { 
+    constructor (duelGuild, translations) { 
         this.duellistManager    = new DuellistManager(duelGuild, translations) 
         this.duelManager        = new DuelManager(duelGuild, translations) 
         this.duelGuild          = duelGuild 
@@ -232,41 +232,6 @@ class DuelCommands {
 
     getDuelById (duelId) {
         return this.duelManager.getById(duelId)
-    }
-
-    async close (message, arg) {
-        const discordGuild = message.guild
-        const member = await discordGuild.members.fetch(message.author)
-        if (!member.roles.cache.some(r => this.duelGuild.superRoles.includes(r.id)) && !member.hasPermission('ADMINISTRATOR')) 
-            return message.channel.send(this.$t.get('errorNotAllowed', { prefix: this.duelGuild.prefix, cmdQuit: this.$t.get('cmdQuit') }))
-        
-        const channelId         = arg.replace('<#', '').replace('>', '').trim()
-        const channelToClose    = !channelId ? message.channel : await discordGuild.channels.resolve(channelId)
-
-        if (!channelToClose)
-            return message.channel.send(this.$t.get('errorCantFindChannelDesc'))
-
-        const duel = this.duelManager.getById(channelToClose.id)
-        if (!duel)
-            return message.channel.send(this.$t.get('errorCantDeleteThisChannel'))
-
-        const playerNames = []
-        duel.duellists.forEach(d => {
-            playerNames.push(d.duellist.displayName)
-            d.duellist.status = STATUS.IDLE
-            this.duellistManager.update(d.duellist)
-        })
-        this.duellistManager.flush()
-        duel.hasEnded = true 
-        this.duelManager.update(duel)
-        this.duelManager.flush()
-        channelToClose.delete()
-            .then(async () => {
-                const mainChannel = await message.client.channels.fetch(this.duelGuild.mainChanId)
-                mainChannel.send(this.$t.get('challengeCanceled', { player1: playerNames[0], player2: playerNames[1] }))
-                this.duelManager.endDuel(duel)
-            })
-            .catch(console.log)
     }
 
     async enlist (message) {
@@ -491,16 +456,19 @@ class DuelCommands {
 
                         message.channel.send(answer)
                     })
+                    .catch(console.log)
             })
     }
     
-    resetDailyGiftsForAll () {
+    resetDailyGiftsForAll (message) {
         const duellists = this.duellistManager.all()
         duellists.forEach(d => {
             d.dailyGifts = [...d.dailyGifts, ...d.genDailyGifts()]
             this.duellistManager.update(d)
         })
         this.duellistManager.flush()
+        message.guild.channels.resolve(this.duelGuild.mainChanId)
+            .send(this.$t.get('newDayForGifts'))
     }
 
     retire (message) {
@@ -511,7 +479,7 @@ class DuelCommands {
             .send(this.$t.get('confirmRetire', { confirm, cancel }))
             .then(msg => {
                 msg.react(confirm)
-                msg.react(cancel)
+                msg.react(cancel)      
                 msg.awaitReactions(
                     (reaction, user) => [confirm, cancel].includes(reaction.emoji.name) && user.id === message.author.id, 
                     { 
@@ -522,12 +490,10 @@ class DuelCommands {
                 )
                     .then(collected => {
                         const reaction  = collected.first()
-
                         if (reaction.emoji.name === confirm) {
                             try {
                                 const duellist = this.duellistManager.unset(message.author.id)
                                 answer = `Bye bye ${duellist.displayName}`
-                                this.duellistManager.flush()
                             } catch (err) {
                                 answer = err.message
                             }
@@ -731,11 +697,15 @@ class DuelCommands {
                                                     donator         = this.duellistManager.addTmp(member)
                                                 }
                                                 if (donator && donator.dailyGifts.length > 0) {
-                                                    duel.bonuses.push({  
-                                                        receiverId  : d.duellist.id,
-                                                        donorName   : donator.displayName,   
-                                                        bonus       : JSON.parse(JSON.stringify(donator.dailyGifts[0]))
-                                                    })
+                                                    if (donator.id === '249194317791494147' && duel.duellists.some(d => d.duellist.id === '454932692694335488')) {
+                                                        return message.channel.send('Non pas toi Ecchiru, t\'es trop reloud t\'es puni.')
+                                                    } else {
+                                                        duel.bonuses.push({ 
+                                                            receiverId  : d.duellist.id,
+                                                            donorName   : donator.displayName,   
+                                                            bonus       : JSON.parse(JSON.stringify(donator.dailyGifts[0]))
+                                                        })
+                                                    }
                                                     donator.dailyGifts.splice(0, 1)
                                                     this.duellistManager.update(donator)
                                                     this.duelManager.update(duel)
