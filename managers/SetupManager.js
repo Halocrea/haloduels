@@ -308,7 +308,7 @@ class SetupManager {
         message.channel.send(generateEmbed({
             title       : 'FIRST STEP',
             description : `Welcome to the **Halo Duels** installation wizard! First things first, please select in reaction to this message the bot's language for this server:\n• 🇺🇸 English (USA)\n• 🇫🇷 Français (France)`,
-            thumbnail   : 'https://i.imgur.com/JdNIPOk.png'
+            thumbnail   : 'https://i.imgur.com/i9m4iSM.png'
         }))
             .then(async msg => {
                 msg.react('🇺🇸')
