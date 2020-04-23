@@ -663,7 +663,7 @@ class DuelCommands {
                                     
                                     let ratio = '' 
                                     if (d.duellist.stats.victories + d.duellist.stats.defeats > 0)
-                                        ratio = `${Math.round((d.duellist.stats.victories/(d.duellist.stats.victories + d.duellist.stats.defeats))*10000)/100}% de victoires`
+                                        ratio = this.$t.get('nbPercentVictories', { nb: Math.round((d.duellist.stats.victories/(d.duellist.stats.victories + d.duellist.stats.defeats))*10000)/100 })
                                     else 
                                         ratio = this.$t.get('noFight')
                                     

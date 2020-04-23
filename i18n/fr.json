@@ -88,6 +88,7 @@
     "mainChanTitle"                 : "provocations-résultats", 
     "mainChanTopic"                 : "Venez défier vos adversaires et constater les résultats des autres duels ici !",
     "nbDuels"                       : "Nombre de duels", 
+    "nbPercentVictories"            : "{nb}% de victoires",
     "newChallenge"                  : "❗ NOUVELLE PROVOCATION EN DUEL ❗",
     "newChallengeDesc"              : "{defender}, **{offender}** vous provoque en duel ! Réagissez avec {accept} pour accepter, ou {decline} pour refuser.",
     "newChallenger"                 : "Un nouveau combattant dans l'arène !",
