@@ -1,7 +1,7 @@
 const Database  = require('better-sqlite3')
 const Duellist  = require ('../schemas/Duellist')
 
-class DuellistManager {
+class Duellists {
     constructor (guild) {
         try {
             this.db = new Database(`data/duellists-${guild.id}.db`)
@@ -93,4 +93,4 @@ class DuellistManager {
     }
 }
 
-module.exports = DuellistManager
+module.exports = Duellists

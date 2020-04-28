@@ -1,8 +1,8 @@
-const generateEmbed = require('./../utils/generateEmbed')
-const Guild         = require('./../schemas/Guild')
-const I18N          = require('./../utils/I18N')
+const generateEmbed = require('../utils/generateEmbed')
+const Guild         = require('../schemas/Guild')
+const I18N          = require('../utils/I18N')
 
-class SetupManager {
+class SetupCommands {
     constructor (guildManager) {
         this.guildManager = guildManager
     }
@@ -472,4 +472,4 @@ class SetupManager {
     }
 }
 
-module.exports = SetupManager
+module.exports = SetupCommands

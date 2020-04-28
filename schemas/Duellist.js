@@ -1,5 +1,5 @@
 const bonuses           = require('../utils/bonuses')
-const { STATUS }        = require('../utils/DUEL_ENUMS')
+const { STATUS }        = require('../utils/enums.js')
 
 class Duellist {
     constructor (args, tmp = false) {

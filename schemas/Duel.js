@@ -1,7 +1,7 @@
-const bonuses           = require('../utils/bonuses')
-const I18N              = require ('../utils/I18N')
-const DuellistManager   = require ('../managers/DuellistManager')
-const { RESULT, STATUS }= require('../utils/DUEL_ENUMS')
+const bonuses               = require('../utils/bonuses')
+const I18N                  = require ('../utils/I18N')
+const Duellists             = require ('../crud/Duellists')
+const { RESULT, STATUS }    = require('../utils/enums.js')
 
 class Duel {
     constructor (args, guild) {
@@ -31,13 +31,13 @@ class Duel {
                 duellistsRaw = args.duellists
         }
 
-        const duellistManager = new DuellistManager(guild)
+        const duellists = new Duellists(guild)
         duellistsRaw.forEach(d => {
             if (typeof d.duellist === 'string') {
-                this.duellists.push({ color: d.color, duellist: duellistManager.getById(d.duellist) }) 
+                this.duellists.push({ color: d.color, duellist: duellists.getById(d.duellist) }) 
             } else {
                 d.duellist.status  = STATUS.FIGHTING
-                const duellist = duellistManager.update(d.duellist)
+                const duellist = duellists.update(d.duellist)
                 this.duellists.push({ color: d.color, duellist: duellist })
             }
         })

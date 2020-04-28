@@ -1,16 +1,16 @@
 require('dotenv').config()
 
-const DuelCommands      = require('./../commands/DuelCommands')
-const SuperUserCommands = require('./../commands/SuperUserCommands')
-const generateEmbed     = require('./../utils/generateEmbed')
-const I18N              = require('./../utils/I18N')
+const DuelManager       = require('../managers/DuelManager')
+const SuperUserManager  = require('../managers/SuperUserManager')
+const generateEmbed     = require('../utils/generateEmbed')
+const I18N              = require('../utils/I18N')
 
-class CommandManager {
+class MainCommands {
     constructor (client, guild) {
         this.client             = client
         this.$t                 = new I18N(guild.locale)
-        this.duelCommands       = new DuelCommands(guild, this.$t)
-        this.superUserCommands  = new SuperUserCommands(guild, this.$t)
+        this.duelManager        = new DuelManager(guild, this.$t)
+        this.superUserManager   = new SuperUserManager(guild, this.$t)
         this.discordGuild       = client.guilds.resolve(guild.id)
         this.duelGuild          = guild
     }
@@ -30,43 +30,43 @@ class CommandManager {
                 this.help(message)
                 break 
             case this.$t.get('cmdAttack'):
-                this.duelCommands.attack(message)
+                this.duelManager.attack(message)
                 break 
             case this.$t.get('cmdClose'):
-                this.superUserCommands.close(message, args)
+                this.superUserManager.close(message, args)
                 break
             case this.$t.get('cmdInvite'):
                 this.inviteBot(message)
                 break
             case this.$t.get('cmdLeaderboard'):
-                this.duelCommands.listDuellists(message)
+                this.duelManager.listDuellists(message)
                 break
             case this.$t.get('cmdNickname'): 
-                this.duelCommands.nickname(message, args)
+                this.duelManager.nickname(message, args)
                 break 
             case this.$t.get('cmdPrefix'): 
-                this.superUserCommands.prefix(message, args)
+                this.superUserManager.prefix(message, args)
                 break 
             case this.$t.get('cmdRetire'): 
-                this.duelCommands.retire(message)
+                this.duelManager.retire(message)
                 break 
             case this.$t.get('cmdQuit'): 
-                this.duelCommands.rageQuit(message)
+                this.duelManager.rageQuit(message)
                 break
             case this.$t.get('cmdStats'):
-                this.duelCommands.getStatsForUser(message)
+                this.duelManager.getStatsForUser(message)
                 break 
             case this.$t.get('cmdSuperRole'): 
-                this.superUserCommands.addSuperRole(message)
+                this.superUserManager.addSuperRole(message)
                 break
             case this.$t.get('cmdUninstall'):
-                this.superUserCommands.uninstall(message)
+                this.superUserManager.uninstall(message)
                 break
             default: 
                 if (message.channel.id === this.duelGuild.mainChanId) {
                     const defender = message.mentions.members.first() 
                     if (defender) 
-                        this.duelCommands.challenge(message, args)
+                        this.duelManager.challenge(message, args)
                     else {
                         if (this.duelGuild.rulesChanId) {
                             const rulesChannel = await message.client.channels.fetch(this.duelGuild.rulesChanId)
@@ -75,9 +75,9 @@ class CommandManager {
                             message.channel.send(this.$t.get('errorCommandNotFound', { prefix: this.duelGuild.prefix, cmdHelp: this.$t.get('cmdHelp') }))
                     }
                 } else {
-                    const duel = this.duelCommands.getDuelById(message.channel.id)
+                    const duel = this.duelManager.getDuelById(message.channel.id)
                     if (duel && duel.duellists.some(d => d.duellist.id === message.author.id)) 
-                        this.duelCommands.attack(message)
+                        this.duelManager.attack(message)
                     else {
                         if (this.duelGuild.rulesChanId) {
                             const rulesChannel = await message.client.channels.fetch(this.duelGuild.rulesChanId)
@@ -123,8 +123,8 @@ class CommandManager {
     }
 
     resetDailyGiftsForAll (message) {
-        this.duelCommands.resetDailyGiftsForAll(message)
+        this.duelManager.resetDailyGiftsForAll(message)
     }
 }
 
-module.exports = CommandManager
+module.exports = MainCommands

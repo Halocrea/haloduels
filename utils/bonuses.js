@@ -1,4 +1,4 @@
-const { RESULT, TYPE }  = require('./DUEL_ENUMS')
+const { RESULT, TYPE }  = require('./enums.js')
 
 module.exports = [
     {

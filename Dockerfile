@@ -4,8 +4,8 @@ FROM node:alpine
 WORKDIR /app
 
 # Save that must be shared to the host
-RUN mkdir -p /app/var
-VOLUME /app/var
+RUN mkdir -p /app/data
+VOLUME /app/data
 
 # Install app dependencies
 # A wildcard is used to ensure both package.json AND package-lock.json are copied

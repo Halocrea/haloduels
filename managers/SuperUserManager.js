@@ -1,16 +1,16 @@
-const DuellistManager       = require('./../managers/DuellistManager')
-const DuelManager           = require('./../managers/DuelManager')
-const generateEmbed         = require('./../utils/generateEmbed')
-const GuildManager          = require('./../managers/GuildManager')
-const { STATUS, RESULT }    = require('./../utils/DUEL_ENUMS') 
+const Duellists     = require('../crud/Duellists')
+const Duels         = require('../crud/Duels')
+const generateEmbed = require('../utils/generateEmbed')
+const Guilds        = require('../crud/Guilds')
+const { STATUS }    = require('../utils/enums.js') 
 
-class SuperUserCommands {
+class SuperUserManager {
     constructor (duelGuild, translations) { 
-        this.guildManager       = new GuildManager() 
-        this.duelManager        = new DuelManager(duelGuild, translations) 
-        this.duellistManager    = new DuellistManager(duelGuild, translations) 
-        this.duelGuild          = duelGuild 
-        this.$t                 = translations
+        this.guilds     = new Guilds() 
+        this.duels      = new Duels(duelGuild, translations) 
+        this.duellists  = new Duellists(duelGuild, translations) 
+        this.duelGuild  = duelGuild 
+        this.$t         = translations
     }
 
     async addSuperRole (message) {
@@ -49,7 +49,7 @@ class SuperUserCommands {
             })
         }
         
-        this.guildManager.update(this.duelGuild)
+        this.guilds.update(this.duelGuild)
 
         message.channel.send(generateEmbed({
             color       : '#43b581',
@@ -70,7 +70,7 @@ class SuperUserCommands {
         if (!channelToClose)
             return message.channel.send(this.$t.get('errorCantFindChannelDesc'))
 
-        const duel = this.duelManager.getById(channelToClose.id)
+        const duel = this.duels.getById(channelToClose.id)
         if (!duel)
             return message.channel.send(this.$t.get('errorCantDeleteThisChannel'))
 
@@ -78,17 +78,17 @@ class SuperUserCommands {
         duel.duellists.forEach(d => {
             playerNames.push(d.duellist.displayName)
             d.duellist.status = STATUS.IDLE
-            this.duellistManager.update(d.duellist)
+            this.duellists.update(d.duellist)
         })
         
         duel.hasEnded = true 
-        this.duelManager.update(duel)
+        this.duels.update(duel)
         
         channelToClose.delete()
             .then(async () => {
                 const mainChannel = await message.client.channels.fetch(this.duelGuild.mainChanId)
                 mainChannel.send(this.$t.get('challengeCanceled', { player1: playerNames[0], player2: playerNames[1] }))
-                this.duelManager.endDuel(duel)
+                this.duels.endDuel(duel)
             })
             .catch(console.log)
     }
@@ -109,7 +109,7 @@ class SuperUserCommands {
         this.duelGuild.prefix               = strippedContent
         this.duelGuild.waitingSetupAnswer   = false
         this.duelGuild.setupStep            = 3
-        this.guildManager.update(this.duelGuild)
+        this.guilds.update(this.duelGuild)
         
         message.channel.send(generateEmbed({
             color       : '#43b581', 
@@ -149,7 +149,7 @@ class SuperUserCommands {
                 if (reaction.emoji.name === confirm) {
                     message.channel.send('See you, space cowboy!')
                         .then(() => {
-                            this.guildManager.remove(this.duelGuild.id)
+                            this.guilds.remove(this.duelGuild.id)
                             message.guild.leave()
                         })
 
@@ -172,4 +172,4 @@ class SuperUserCommands {
         return true
     }
 }
-module.exports = SuperUserCommands
+module.exports = SuperUserManager

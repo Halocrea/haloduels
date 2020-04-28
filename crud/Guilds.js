@@ -2,7 +2,7 @@ const fs        = require('fs')
 const Database  = require('better-sqlite3')
 const Guild     = require('../schemas/Guild') 
 
-class GuildManager {
+class Guilds {
     constructor () {
         try {
             this.db = new Database('data/guilds.db')
@@ -105,4 +105,4 @@ class GuildManager {
     }
 }
 
-module.exports = GuildManager
+module.exports = Guilds
