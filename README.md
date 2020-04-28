@@ -10,11 +10,11 @@
   <img src="https://img.shields.io/discord/443833089966342145?color=7289DA&label=Halo%20Cr%C3%A9ation&logo=Discord" />
 </p>
 
-<p style="text-align:center"><img alt="Halo Duels logo" src="assets/logo-hd.png" width="100px" /></p>
+<p align="center"><img alt="Halo Duels logo" src="assets/logo-hd.png" width="100px" /></p>
 
 > A Discord Bot to let your servers' members fight some &#34;Halo-themed&#34; duels, full of gifs and funny stuff!
 
-<p style="text-align:center"><img alt="demo example" src="assets/readme.gif" /></p>
+<p align="center"><img alt="demo example" src="assets/readme.gif" /></p>
 
 ### 🏠 [Homepage](https://github.com/tepec)
 ### 🔫 [Demo](https://discord.gg/74UAq84)
