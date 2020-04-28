@@ -50,7 +50,6 @@ class SuperUserCommands {
         }
         
         this.guildManager.update(this.duelGuild)
-        this.guildManager.flush()
 
         message.channel.send(generateEmbed({
             color       : '#43b581',
@@ -81,10 +80,10 @@ class SuperUserCommands {
             d.duellist.status = STATUS.IDLE
             this.duellistManager.update(d.duellist)
         })
-        this.duellistManager.flush()
+        
         duel.hasEnded = true 
         this.duelManager.update(duel)
-        this.duelManager.flush()
+        
         channelToClose.delete()
             .then(async () => {
                 const mainChannel = await message.client.channels.fetch(this.duelGuild.mainChanId)
@@ -111,7 +110,7 @@ class SuperUserCommands {
         this.duelGuild.waitingSetupAnswer   = false
         this.duelGuild.setupStep            = 3
         this.guildManager.update(this.duelGuild)
-        this.guildManager.flush()
+        
         message.channel.send(generateEmbed({
             color       : '#43b581', 
             title       : this.$t.get('setupPrefixSuccess', { prefix: this.duelGuild.prefix })
@@ -151,7 +150,6 @@ class SuperUserCommands {
                     message.channel.send('See you, space cowboy!')
                         .then(() => {
                             this.guildManager.remove(this.duelGuild.id)
-                            this.guildManager.flush()
                             message.guild.leave()
                         })
 

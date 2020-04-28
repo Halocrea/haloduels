@@ -4,6 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "dependencies": {
+    "better-sqlite3": "^7.0.1",
     "discord.js": "^12.1.1",
     "dotenv": "^8.2.0",
     "fs": "^0.0.1-security"

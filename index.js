@@ -23,7 +23,7 @@ client.on('ready', () => {
 })
 
 client.on('message', async message => {
-    if (!message.guild) // mps
+    if (!message.guild) // MPs
         return 
     
     const currentGuild  = guildManager.getById(message.guild.id)
@@ -68,7 +68,6 @@ client.on('message', async message => {
         const commandManager            = new CommandManager(client, currentGuild)
         currentGuild.lastGiftsRenewal   = new Date()
         guildManager.update(currentGuild)
-        guildManager.flush()
         commandManager.resetDailyGiftsForAll(message)
     }  
 })

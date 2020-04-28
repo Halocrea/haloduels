@@ -1,6 +1,6 @@
 require('dotenv').config()
 
-const fs                    = require('fs')
+const Database              = require('better-sqlite3')
 const Statements            = require('../utils/Statements')
 const toolsOfDestruction    = require('./../utils/toolsOfDestruction')
 const { TYPE, RESULT }      = require('./../utils/DUEL_ENUMS')
@@ -8,79 +8,91 @@ const Duel                  = require('./../schemas/Duel')
 
 class DuelManager {
     constructor (guild, translations) {
-        this.guild      = guild
-        this.filePath   = `saves/duels-${guild.id}.json`
-        this.duels      = []
-        this.$t         = translations
-        const save      = fs.readFileSync(this.filePath, 'utf8')
-        const duelsJSON = JSON.parse(save) 
-        
-        for (const i in duelsJSON) if (!duelsJSON[i].hasEnded)
-            this.duels.push(new Duel(duelsJSON[i], guild))
+        this.guild  = guild
+        this.$t     = translations
+        try {
+            this.db = new Database(`data/duels-${guild.id}.db`)
+
+            const createDuelsTable = `CREATE TABLE IF NOT EXISTS duels (
+                id VARCHAR(30) PRIMARY KEY,
+                bonuses TEXT,
+                busy BOOLEAN,
+                count TEXT,
+                duellists TEXT, 
+                hasEnded BOOLEAN,
+                name VARCHAR(255),
+                startedAt DATETIME,
+                updatedAt DATETIME
+            );`;
+            this.db.exec(createDuelsTable)
+        } catch (err) {
+            console.log(err)
+        }
     }
 
     all () {
-        return this.duels
+        const duelsRaw     = this.db.prepare('SELECT * FROM duels').all()
+        const duels        = []
+        for (const i in duelsRaw) 
+            duels.push(new Duel(duelsRaw[i], this.guild))
+
+        return duels
     }
 
     create (channel, offender, defender) {
-        const duel = new Duel({
-            id          : channel.id,
-            name        : channel.name,
-            duellists   : [
-                { color: 'red', duellist: offender },
-                { color: 'blue', duellist: defender }
-            ],
-            busy        : true
-        }, this.guild)
-        this.duels.push(duel)
+        try {
+            const checkExistence = this.getById(channel.id)
+            if (checkExistence)
+                return checkExistence
+            
+            const duel = new Duel({
+                id          : channel.id,
+                name        : channel.name,
+                duellists   : [
+                    { color: 'red', duellist: offender },
+                    { color: 'blue', duellist: defender }
+                ],
+                busy        : true
+            }, this.guild)
+            
+            let queryStr    = 'INSERT INTO duels '
+            let rowNames    = ''
+            let namedValues = '' 
 
-        return duel
+            for (let k in duel._serialize()) {
+                rowNames    += `${k},`
+                namedValues += `@${k},`
+            }
+
+            rowNames    = rowNames.substring(0, rowNames.length - 1)
+            namedValues = namedValues.substring(0, namedValues.length - 1)
+            queryStr    += `(${rowNames}) VALUES (${namedValues})`
+
+            const statement = this.db.prepare(queryStr)
+
+            statement.run(duel._serialize())
+
+            return duel
+        } catch (err) {
+            console.log(err)
+        }
     }
 
     endDuel (duel) {
-        const index = this.duels.findIndex(d => d.id === duel.id)
-        if (index < 0) 
-            return 
-        
-        this.duels.splice(index, 1)
         try {
-            const save          = fs.readFileSync(this.filePath, 'utf8')
-            const duelsJSON     = JSON.parse(save) 
-            const inSaveDuelIndex   = duelsJSON.findIndex(d => d.id === duel.id)
-            if (inSaveDuelIndex >= 0) {
-                duelsJSON.splice(inSaveDuelIndex, 1)
-                fs.writeFileSync(this.filePath, JSON.stringify(duelsJSON), 'utf8')
-            }
+            const info = this.db.prepare('DELETE FROM duels WHERE id = ? LIMIT 1').run(duel.id)
+            return info.changes
         } catch (err) {
             console.log(err)
         }
-    }
 
-    flush () {
-        try {
-            const save          = fs.readFileSync(this.filePath, 'utf8')
-            const duelsJSON     = JSON.parse(save) 
-            let duelsToSave     = []
-            for (let i = 0; i < this.duels.length; i++) {
-                const inSaveDuelIndex = duelsJSON.findIndex(d => d.id === this.duels[i].id)
-                
-                if ((inSaveDuelIndex >= 0 && new Date(duelsJSON[inSaveDuelIndex].updatedAt) < this.duels[i].updatedAt) ||
-                    inSaveDuelIndex < 0
-                )
-                    duelsToSave.push(this.duels[i]._serialize())
-                else 
-                    duelsToSave.push(duelsJSON[inSaveDuelIndex])
-            }
-            duelsToSave = [...duelsToSave, ...duelsJSON.filter(d => duelsToSave.findIndex(f => f.id === d.id) < 0)]
-            fs.writeFileSync(this.filePath, JSON.stringify(duelsToSave), 'utf8')
-        } catch (err) {
-            console.log(err)
-        }
+        return false
     }
 
     getById(id) {
-        return this.duels.find(d => d.id === id)
+        const duelRaw = this.db.prepare('SELECT * FROM duels WHERE id = ? LIMIT 1').get(id)
+
+        return duelRaw ? new Duel(duelRaw, this.guild) : null
     }
     
     generateNewRound (duel, offenderId) {
@@ -138,7 +150,6 @@ class DuelManager {
             duel.count.roundWinners.push(winner)
 
         this.update(duel)
-        this.flush()
 
         return {
             winner,
@@ -147,18 +158,21 @@ class DuelManager {
     }
 
     update (args) {
-        const index = this.duels.findIndex(d => d.id === args.id)
-        if (index < 0)
-            return
-        
-        for (let k in args) {
-            if (this.duels[index].hasOwnProperty(k)) 
-                this.duels[index][k] = args[k]
-        }
+        const currentDuel = this.getById(args.id)
 
-        this.duels[index].updatedAt = new Date()
+        if (!currentDuel)
+            return false 
+        
+        args.updatedAt = new Date() 
+
+        let queryStr = 'UPDATE duels SET '
+        for (let k in args._serialize()) if (currentDuel.hasOwnProperty(k) && k !== 'id') 
+            queryStr += `${k}=@${k},`
+        queryStr = `${queryStr.substring(0, queryStr.length - 1)} WHERE id=@id`
+
+        return this.db.prepare(queryStr).run(args._serialize())
     }
-    
+
     _getRandomRoundType () {
         const randomKey = Object.keys(TYPE)[Math.floor(Math.random() * Object.keys(TYPE).length)]
         return TYPE[randomKey]

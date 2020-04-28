@@ -72,7 +72,7 @@ class CommandManager {
                             const rulesChannel = await message.client.channels.fetch(this.duelGuild.rulesChanId)
                             message.channel.send(this.$t.get('errorCommandNotFoundRuleChan', { rulesChannel }))
                         } else 
-                            message.channel.send(this.$t.get('errorCommandNotFound'))
+                            message.channel.send(this.$t.get('errorCommandNotFound', { prefix: this.duelGuild.prefix, cmdHelp: this.$t.get('cmdHelp') }))
                     }
                 } else {
                     const duel = this.duelCommands.getDuelById(message.channel.id)
@@ -83,7 +83,7 @@ class CommandManager {
                             const rulesChannel = await message.client.channels.fetch(this.duelGuild.rulesChanId)
                             message.channel.send(this.$t.get('errorCommandNotFoundRuleChan', { rulesChannel }))
                         } else 
-                            message.channel.send(this.$t.get('errorCommandNotFound'))
+                            message.channel.send(this.$t.get('errorCommandNotFound', { prefix: this.duelGuild.prefix, cmdHelp: this.$t.get('cmdHelp') }))
                     }
                 }
                 break

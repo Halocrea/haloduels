@@ -20,3 +20,6 @@ client/.DS_Store
 
 saves/*
 !saves/.gitkeep
+
+data/*
+!data/.gitkeep

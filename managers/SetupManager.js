@@ -70,7 +70,7 @@ class SetupManager {
         this.guild.waitingSetupAnswer   = false
         this.guild.setupStep            = 3
         this.guildManager.update(this.guild)
-        this.guildManager.flush()
+        
         message.channel.send(generateEmbed({
             color       : '#43b581', 
             title       : this.$t.get('setupPrefixSuccess', { prefix: this.guild.prefix })
@@ -111,7 +111,7 @@ class SetupManager {
         this.guild.waitingSetupAnswer   = false 
         this.guild.setupStep            = 5
         this.guildManager.update(this.guild)
-        this.guildManager.flush()
+        
         await message.channel.send('OK!')
         this._step5(message)
     }
@@ -132,7 +132,7 @@ class SetupManager {
         this.guild.waitingSetupAnswer   = false 
         this.guild.setupStep            = 6
         this.guildManager.update(this.guild)
-        this.guildManager.flush()
+        
         await message.channel.send('OK!')
         this._step6(message)
     }
@@ -150,12 +150,12 @@ class SetupManager {
         this.guild.mainChanId           = channel.id
         this.guild.waitingSetupAnswer   = false 
         this.guildManager.update(this.guild)
-        this.guildManager.flush()
+        
         await message.channel.send('OK!')
 
         const successEmbed = generateEmbed({
             color       : '#43b581', 
-            description : this.$t.get('setupAutoCompletedDesc', { prefix: this.guild.prefix }),
+            description : this.$t.get('setupAutoCompletedDesc', { prefix: this.guild.prefix, cmdPrefix: this.$t.get('cmdPrefix'), cmdSuperRole: this.$t.get('cmdSuperRole') }),
             title       : this.$t.get('setupAutoCompleted')
         })
         
@@ -171,13 +171,13 @@ class SetupManager {
                 .then(() => {
                     this.guild.setupCompleted = true
                     this.guildManager.update(this.guild)
-                    this.guildManager.flush()
+                    
                     message.channel.send(successEmbed)
                 })
         } else {
             this.guild.setupCompleted = true
             this.guildManager.update(this.guild)
-            this.guildManager.flush()
+            
             message.channel.send(successEmbed)
         }
     }
@@ -235,7 +235,7 @@ class SetupManager {
             await this._postRules(rulesChan, mainChan, this.guild.prefix)
             this.guild.setupCompleted = true 
             this.guildManager.update(this.guild)
-            this.guildManager.flush()
+            
             loadingMsg.delete()
                 .then(() => {
                     message.channel.send(generateEmbed({
@@ -339,11 +339,12 @@ class SetupManager {
                         this.guild.setupStep    = 2
                         this.$t                 = new I18N(this.guild.locale)
                         this.guildManager.addOrOverwrite(this.guild)
-                        this.guildManager.flush()
+                        
                         message.channel.send(this.$t.get('setupLanguageValidated'))
                             .then(this._step2(message))
                     })
-                    .catch(() => {
+                    .catch((err) => {
+                        console.log(err)
                         message.channel.send(this.$t.get('errorSetupTimeout'))
                     })
             })
@@ -378,18 +379,19 @@ class SetupManager {
                             case change:
                                 this.guild.waitingSetupAnswer = { authorId: message.author.id, channelId: message.channel.id }
                                 this.guildManager.update(this.guild)
-                                this.guildManager.flush()
+                                
                                 message.channel.send(this.$t.get('setupDefinePrefix'))
                                 break 
                             default: 
                                 this.guild.setupStep = 3
                                 this.guildManager.update(this.guild)
-                                this.guildManager.flush()
+                                
                                 this._step3(message)
                                 break 
                         }
                     })
-                    .catch(() => {
+                    .catch((err) => {
+                        console.log(err)
                         message.channel.send(this.$t.get('errorSetupTimeout'))
                     })
             })
@@ -444,7 +446,6 @@ class SetupManager {
             .then(() => {
                 this.guild.waitingSetupAnswer = { authorId: message.author.id, channelId: message.channel.id }
                 this.guildManager.update(this.guild)
-                this.guildManager.flush()
             })
     }
 
@@ -456,7 +457,6 @@ class SetupManager {
             .then(() => {
                 this.guild.waitingSetupAnswer = { authorId: message.author.id, channelId: message.channel.id }
                 this.guildManager.update(this.guild)
-                this.guildManager.flush()
             })
     }
 
@@ -468,7 +468,6 @@ class SetupManager {
             .then(() => {
                 this.guild.waitingSetupAnswer = { authorId: message.author.id, channelId: message.channel.id }
                 this.guildManager.update(this.guild)
-                this.guildManager.flush()
             })
     }
 }

@@ -3,20 +3,30 @@ const { STATUS }        = require('../utils/DUEL_ENUMS')
 
 class Duellist {
     constructor (args, tmp = false) {
-        this.dailyGifts     = args.dailyGifts || this.genDailyGifts()
         this.displayName    = args.displayName
         this.enroledAt      = args.enroledAt ? new Date(args.enroledAt) : new Date()
         this.id             = args.id
         this.lastDuel       = args.lastDuel || null
-        this.stats          = args.stats || {
-            defeats     : 0,
-            victories   : 0
-        }
         this.status         = args.status || STATUS.IDLE
         this.tmp            = args.tmp || tmp
         this.updatedAt      = args.updatedAt ? new Date(args.updatedAt) : new Date()
 
-    }
+        if (args.dailyGifts) {
+            if (typeof args.dailyGifts === 'string') 
+                this.dailyGifts = JSON.parse(args.dailyGifts)
+            else 
+                this.dailyGifts = args.dailyGifts
+        } else 
+            this.dailyGifts = this.genDailyGifts()
+            
+        if (args.stats) {
+            if (typeof args.stats === 'string') 
+                this.stats = JSON.parse(args.stats)
+            else 
+                this.stats = args.stats
+        } else 
+            this.stats = { defeats: 0, victories: 0 }
+    } 
 
     genDailyGifts () {
         const gifts = []
@@ -27,16 +37,17 @@ class Duellist {
     }
 
     _serialize () {
+        const lastDuel = this.lastDuel ? typeof this.lastDuel === 'string' ? new Date(this.lastDuel) : this.lastDuel : null
         return {
-            dailyGifts  : this.dailyGifts, 
+            dailyGifts  : JSON.stringify(this.dailyGifts), 
             displayName : this.displayName, 
-            enroledAt   : this.enroledAt,
+            enroledAt   : this.enroledAt.toISOString(),
             id          : this.id,
-            lastDuel    : this.lastDuel, 
-            stats       : this.stats, 
+            lastDuel    : lastDuel ? lastDuel.toISOString() : null, 
+            stats       : JSON.stringify(this.stats), 
             status      : this.status, 
-            tmp         : this.tmp,
-            updatedAt   : this.updatedAt
+            tmp         : this.tmp ? 1 : 0,
+            updatedAt   : this.updatedAt ? new Date().toISOString() : this.updatedAt.toISOString()
         }
     }
 }

@@ -120,6 +120,7 @@ class DuelCommands {
 
     async challenge (message) {
         let offender = this.duellistManager.getById(message.author.id)
+
         if (!offender) 
             offender = await this.enlist(message)
         
@@ -140,7 +141,7 @@ class DuelCommands {
         
         let defenderDuellist = this.duellistManager.getById(defenderMember.id)
         if (!defenderDuellist) {
-            defenderDuellist = this.duellistManager.addTmp(defenderMember)
+            defenderDuellist = this.duellistManager.add(defenderMember, true)
         }
         if (defenderDuellist.status !== STATUS.IDLE) 
             return message.channel.send(this.$t.get('errorOpponentInADuel'))
@@ -148,7 +149,6 @@ class DuelCommands {
         if (offender.id === defenderMember.id) 
             return message.channel.send(this.$t.get('errorCantAutoChallenge'))
 
-        this.duellistManager.flush()
         const accept    = '🤺'
         const decline   = '🚷'
         const embed     = generateEmbed({
@@ -162,7 +162,6 @@ class DuelCommands {
             .then(msg => {
                 offender.status = STATUS.WAITING_DUEL_APPROVAL
                 this.duellistManager.update(offender)
-                this.duellistManager.flush()
 
                 msg.react(accept)
                 msg.react(decline)
@@ -183,7 +182,6 @@ class DuelCommands {
                                 if (defenderDuellist.tmp) {
                                     defenderDuellist.tmp    = false 
                                     this.duellistManager.update(defenderDuellist)
-                                    this.duellistManager.flush()
                                     let rulesChannel        = null 
                                     if (this.duelGuild.rulesChanId) 
                                         rulesChannel = await message.client.channels.fetch(this.duelGuild.rulesChanId)
@@ -214,7 +212,6 @@ class DuelCommands {
                             if (defenderDuellist.tmp) 
                                 this.duellistManager.unset(defenderDuellist.id)
                             
-                            this.duellistManager.flush()
                             message.channel.send(this.$t.get('challengeDeclined', { player: message.author, opponent: defenderMember.displayName }))
                         }
                     })
@@ -224,7 +221,6 @@ class DuelCommands {
                         if (defenderDuellist.tmp) 
                             this.duellistManager.unset(defenderDuellist.id)
 
-                        this.duellistManager.flush()
                         msg.channel.send(this.$t.get('errorOpponentTimeout', { player: message.author, opponent: defenderDuellist.displayName }))
                     })
             })
@@ -241,7 +237,6 @@ class DuelCommands {
             const duellist      = this.duellistManager.add(member)
             const mainChannel   = await message.client.channels.fetch(this.duelGuild.mainChanId)
             let rulesChannel    = null 
-            this.duellistManager.flush()
 
             if (this.duelGuild.rulesChanId) 
                 rulesChannel = await message.client.channels.fetch(this.duelGuild.rulesChanId)
@@ -257,7 +252,7 @@ class DuelCommands {
             })
             message.channel.send(embed)
                 .catch(console.log)
-            
+
             return duellist
         } catch (err) {
             message.channel.send(err.message)
@@ -375,7 +370,6 @@ class DuelCommands {
         try {
             duellist.displayName = arg.trim()
             this.duellistManager.update(duellist)
-            this.duellistManager.flush()
             message.channel.send(this.$t.get('nicknameChanged', { name: duellist.displayName }))
         } catch (err) {
             message.channel.send(err.message)
@@ -419,10 +413,8 @@ class DuelCommands {
                                 d.duellist.status = STATUS.IDLE
                                 this.duellistManager.update(d.duellist)
                             })
-                            this.duellistManager.flush()
                             duel.hasEnded = true 
                             this.duelManager.update(duel)
-                            this.duelManager.flush()
                             message.channel.delete()
                                 .then(async () => {
                                     const winner = duel.duellists.find(d => d.duellist.id !== message.author.id)
@@ -466,7 +458,7 @@ class DuelCommands {
             d.dailyGifts = [...d.dailyGifts, ...d.genDailyGifts()]
             this.duellistManager.update(d)
         })
-        this.duellistManager.flush()
+        
         message.guild.channels.resolve(this.duelGuild.mainChanId)
             .send(this.$t.get('newDayForGifts'))
     }
@@ -490,13 +482,19 @@ class DuelCommands {
                 )
                     .then(collected => {
                         const reaction  = collected.first()
-                        if (reaction.emoji.name === confirm) {
+                        if (reaction.emoji.name === confirm) { 
                             try {
+                                const duellist = this.duellistManager.getById(message.author.id)
+                                if (duellist.status !== STATUS.IDDLE) 
+                                    answer = this.$t.get('errorCantRetire')
+                                else {
+                                    this.duellistManager.unset(message.author.id)
+                                    answer = `Bye bye ${duellist.displayName}`
+                                }
                                 const duellist = this.duellistManager.unset(message.author.id)
-                                answer = `Bye bye ${duellist.displayName}`
                             } catch (err) {
                                 answer = err.message
-                            }
+                            } 
                         } else
                             answer = this.$t.get('goodCancel')
 
@@ -570,10 +568,9 @@ class DuelCommands {
                     d.duellist.lastDuel = new Date()
                     this.duellistManager.update(d.duellist)
                 })
-                this.duellistManager.flush()
+                
                 duelWithWinner.duel.hasEnded = true 
                 this.duelManager.update(duelWithWinner.duel)
-                this.duelManager.flush()
                 
                 const winner = duelWithWinner.duel.duellists.find(d => d.duellist.id === duelWinner)
                 const looser = duelWithWinner.duel.duellists.find(d => d.duellist.id !== duelWinner)
@@ -642,7 +639,7 @@ class DuelCommands {
             .then(channel => {
                 message.channel.send(this.$t.get('duelStarting', { offender: offender.duelUser.displayName, defender: defender.duelUser.displayName, channel  }))
                 const duel = this.duelManager.create(channel, offender.duelUser, defender.duelUser)
-                this.duelManager.flush() 
+
                 const giftEmote     = '🎁'
                 const welcomeEmbed  = generateEmbed({
                     title       : this.$t.get('itsTimeForTheDuel'),
@@ -659,9 +656,9 @@ class DuelCommands {
                                     fr: 'fr-FR'
                                 }
                                 duel.duellists.forEach(d => {
-                                    const thisDiscordUser = d.duellist.id === offender.discordUser.id ? offender.discordUser : defender.discordUser
+                                    const thisDiscordUser   = d.duellist.id === offender.discordUser.id ? offender.discordUser : defender.discordUser
+                                    let ratio               = '' 
                                     
-                                    let ratio = '' 
                                     if (d.duellist.stats.victories + d.duellist.stats.defeats > 0)
                                         ratio = this.$t.get('nbPercentVictories', { nb: Math.round((d.duellist.stats.victories/(d.duellist.stats.victories + d.duellist.stats.defeats))*10000)/100 })
                                     else 
@@ -671,6 +668,7 @@ class DuelCommands {
                                     let defeatsLabel    = this.$t.get('defeats', {}, 2)
                                     victoriesLabel      = victoriesLabel.charAt(0).toUpperCase() + victoriesLabel.slice(1)
                                     defeatsLabel        = defeatsLabel.charAt(0).toUpperCase() + defeatsLabel.slice(1)
+                                    
                                     channel.send(generateEmbed({
                                         title       : `${d.color === 'red' ? `🟥 ${this.$t.get('attacker')}` : `🟦 ${this.$t.get('defender')}` } : ${d.duellist.displayName.toUpperCase()}`, 
                                         color       : d.color === 'red' ? '#fa1212' : '#1da1f2', 
@@ -686,31 +684,26 @@ class DuelCommands {
                                     }))
                                         .then(msg => {
                                             msg.react(giftEmote)
-                                            const filter    = (reaction, user) => reaction.emoji.name === giftEmote && [message.client.user.id, offender.duelUser.id, defender.duelUser.id].indexOf(user.id) < 0
+                                            const filter    = (reaction, user) => reaction.emoji.name === giftEmote && ![message.client.user.id, offender.duelUser.id, defender.duelUser.id].includes(user.id)
                                             const collector = msg.createReactionCollector(filter, { time: 5 * 60000 })
                                             collector.on('collect', async (reaction, reactionCollector) => {
                                                 const user      = reaction.users.cache.last()
-
+                                                
                                                 let donator     = this.duellistManager.getById(user.id)
                                                 if (!donator) {
                                                     const member    = await discordGuild.members.fetch(user.id)
-                                                    donator         = this.duellistManager.addTmp(member)
+                                                    donator         = this.duellistManager.add(member, true)
                                                 }
+                                                
                                                 if (donator && donator.dailyGifts.length > 0) {
-                                                    if (donator.id === '249194317791494147' && duel.duellists.some(d => d.duellist.id === '454932692694335488')) {
-                                                        return message.channel.send('Non pas toi Ecchiru, t\'es trop reloud t\'es puni.')
-                                                    } else {
-                                                        duel.bonuses.push({ 
-                                                            receiverId  : d.duellist.id,
-                                                            donorName   : donator.displayName,   
-                                                            bonus       : JSON.parse(JSON.stringify(donator.dailyGifts[0]))
-                                                        })
-                                                    }
+                                                    duel.bonuses.push({ 
+                                                        receiverId  : d.duellist.id,
+                                                        donorName   : donator.displayName,   
+                                                        bonus       : JSON.parse(JSON.stringify(donator.dailyGifts[0]))
+                                                    })
                                                     donator.dailyGifts.splice(0, 1)
                                                     this.duellistManager.update(donator)
-                                                    this.duelManager.update(duel)
-                                                    this.duellistManager.flush() 
-                                                    this.duelManager.flush()                                           
+                                                    this.duelManager.update(duel)                            
                                                     msg.channel.send(this.$t.get('donatorGiftedEquipmentToPlayer', { donator: donator.displayName, player: d.duellist.displayName }))
                                                     reaction.users.remove(user)
                                                 } else if (user) {
@@ -748,7 +741,7 @@ class DuelCommands {
                         clearInterval(itvl)
                         duel.busy = false 
                         this.duelManager.update(duel)
-                        this.duelManager.flush()
+                        
                         embed = generateEmbed({
                             color       : '#43b581', 
                             title       : this.$t.get('newRound'),

@@ -1,108 +1,95 @@
-const fs                = require('fs')
-const Duellist          = require ('../schemas/Duellist')
+const Database  = require('better-sqlite3')
+const Duellist  = require ('../schemas/Duellist')
 
 class DuellistManager {
     constructor (guild) {
-        this.guild          = guild
-        this.filePath       = `saves/duellists-${guild.id}.json`
-        this.duellists      = []
-        const save          = fs.readFileSync(this.filePath, 'utf8')
-        const duellistsJSON = JSON.parse(save) 
+        try {
+            this.db = new Database(`data/duellists-${guild.id}.db`)
+
+            const createDuellistsTable = `CREATE TABLE IF NOT EXISTS duellists (
+                id VARCHAR(30) PRIMARY KEY,
+                displayName VARCHAR(255),
+                enroledAt DATETIME,
+                lastDuel DATETIME,
+                status INTEGER,
+                tmp BOOLEAN,
+                updatedAt DATETIME,
+                dailyGifts TEXT,
+                stats TEXT
+            );`;
+            this.db.exec(createDuellistsTable)
+        } catch (err) {
+            console.log(err)
+        }
+    }
+
+    add (member, temporary = false) {
+        const checkExistence = this.getById(member.id)
         
-        for (const i in duellistsJSON)
-            this.duellists.push(new Duellist(duellistsJSON[i]))
-    }
+        if (checkExistence) 
+            return new Duellist(checkExistence)
+        
+        try {
+            let duellist    = new Duellist(member, temporary)
+            let queryStr    = 'INSERT INTO duellists '
+            let rowNames    = ''
+            let namedValues = '' 
 
-    add (member) {
-        const index     = this.duellists.findIndex(d => d.id === member.id)
-        let duellist    = null 
-        if (index < 0) {
-            duellist = new Duellist(member)
-            this.duellists.push(duellist)
-        } else 
-            duellist = this.duellists[index]
+            for (let k in duellist._serialize()) {
+                rowNames    += `${k},`
+                namedValues += `@${k},`
+            }
 
-        return duellist
-    }
+            rowNames        = rowNames.substring(0, rowNames.length - 1)
+            namedValues     = namedValues.substring(0, namedValues.length - 1)
+            queryStr        += `(${rowNames}) VALUES (${namedValues})`
+            const statement = this.db.prepare(queryStr)
+            
+            statement.run(duellist._serialize())
 
-    addTmp (member) {
-        const index     = this.duellists.findIndex(d => d.id === member.id)
-        let duellist    = null 
-        if (index < 0) {
-            duellist = new Duellist(member, true)
-            this.duellists.push(duellist)
-        } else 
-            duellist = this.duellists[index]
-
-        return duellist
+            return duellist
+        } catch (err) {
+            console.log(err)
+        }
     }
 
     all () {
-        return this.duellists
-    }
+        const duellistsRaw     = this.db.prepare('SELECT * FROM duellists').all()
+        const duellists        = []
+        for (const i in duellistsRaw) 
+            duellists.push(new Duellist(duellistsRaw[i]))
 
-    flush () {
-        try {
-            const save              = fs.readFileSync(this.filePath, 'utf8')
-            const duellistsJSON     = JSON.parse(save) 
-            let duellistsToSave     = []
-            for (let i = 0; i < this.duellists.length; i++) {
-                const inSaveDuellistIndex = duellistsJSON.findIndex(d => d.id === this.duellists[i].id)
-                
-                if ((inSaveDuellistIndex >= 0 && new Date(duellistsJSON[inSaveDuellistIndex].updatedAt) < this.duellists[i].updatedAt) ||
-                    inSaveDuellistIndex < 0
-                )
-                    duellistsToSave.push(this.duellists[i]._serialize())
-                else 
-                duellistsToSave.push(duellistsJSON[inSaveDuellistIndex])
-            }
-            duellistsToSave = [...duellistsToSave, ...duellistsJSON.filter(d => duellistsToSave.findIndex(f => f.id === d.id) < 0)]
-            fs.writeFileSync(this.filePath, JSON.stringify(duellistsToSave), 'utf8')
-        } catch (err) {
-            console.log(err)
-        }
-    }
-    
-    getByDisplayName (displayName) {
-        return this.duellists.find(d => d.displayName === displayName)
+        return duellists
     }
 
     getById (id) {
-        return this.duellists.find(d => d.id === id)
+        const duellistRaw = this.db.prepare('SELECT * FROM duellists WHERE id = ? LIMIT 1').get(id)
+
+        return duellistRaw ? new Duellist(duellistRaw) : null
     }
 
     unset (id) {
-        let duellist    = { displayName: 'user' } 
-        const index     = this.duellists.findIndex(d => d.id === id)
-        if (index >= 0) { 
-            duellist = this.duellists[index]
-            this.duellists.splice(index, 1)
-        }
-        try {
-            const save                  = fs.readFileSync(this.filePath, 'utf8')
-            const duellistsJSON         = JSON.parse(save) 
-            const inSaveDuellistIndex   = duellistsJSON.findIndex(d => d.id === id)
-            if (inSaveDuellistIndex >= 0) {
-                duellistsJSON.splice(inSaveDuellistIndex, 1)
-                fs.writeFileSync(this.filePath, JSON.stringify(duellistsJSON), 'utf8')
-            }
-        } catch (err) {
-            console.log(err)
-        }
+        const info = this.db.prepare('DELETE FROM duellists WHERE id = ? LIMIT 1').run(id)
 
-        return duellist
+        return info.changes >= 0
     }
 
     update (args) {
-        const index = this.duellists.findIndex(d => d.id === args.id)
-        for (let k in args) {
-            if (this.duellists[index].hasOwnProperty(k)) 
-                this.duellists[index][k] = args[k]
-        }
+        const currentDuellist = this.getById(args.id)
 
-        this.duellists[index].updatedAt = new Date()
+        if (!currentDuellist)
+            return false 
+        
+        args.updatedAt = new Date() 
 
-        return this.duellists[index]
+        let queryStr = 'UPDATE duellists SET '
+        for (let k in args._serialize()) if (currentDuellist.hasOwnProperty(k) && k !== 'id') 
+            queryStr += `${k}=@${k},`
+        queryStr = `${queryStr.substring(0, queryStr.length - 1)} WHERE id=@id`
+
+        this.db.prepare(queryStr).run(args._serialize())
+
+        return args
     }
 }
 
