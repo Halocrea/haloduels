@@ -27,7 +27,7 @@ class DuelManager {
         const duel = this.duels.getById(message.channel.id)
         if (!duel) {
             const mainChannel = await message.client.channels.fetch(this.duelGuild.mainChanId)
-            return message.channel.send(this.$t.get('errorWrongChannel', { prefix: this.duelGuild.prefix, mainChannel })).catch(console.log)
+            return message.channel.send(this.$t.get('errorWrongChannel', { prefix: this.duelGuild.prefix, mainChannel })).catch(process.dLogger.log)
         }
         if (duel.busy) 
             return message.delete()
@@ -72,10 +72,10 @@ class DuelManager {
                                         .then(() => {
                                             this._newRoundOrEndGame(message, duelWithWinner)
                                         })
-                                        .catch(console.log)
+                                        .catch(process.dLogger.log)
                                     }, 2000)
                                 })
-                                .catch(console.log)
+                                .catch(process.dLogger.log)
                             }, 2000)
                         } else {
                             const winnerBonus = duel.bonuses.find(b => b.receiverId === round.winner && b.bonus.worksIf === RESULT.VICTORY && b.bonus.type === round.type) 
@@ -98,10 +98,10 @@ class DuelManager {
                                                 .then(() => {
                                                     this._newRoundOrEndGame(message, duelWithWinner)
                                                 })
-                                                .catch(console.log)
+                                                .catch(process.dLogger.log)
                                         })
                                     })
-                                    .catch(console.log)
+                                    .catch(process.dLogger.log)
                                 }, 2000)
                             } else {
                                 const duelWithWinner = this.duels.newRoundDone(duel, round)
@@ -110,7 +110,7 @@ class DuelManager {
                                         .then(() => {
                                             this._newRoundOrEndGame(message, duelWithWinner)
                                         })
-                                        .catch(console.log)
+                                        .catch(process.dLogger.log)
                                 }, 2000)
                             }
                         }
@@ -196,7 +196,7 @@ class DuelManager {
                                         ]
                                     })
                                     mainChannel.send(embed)
-                                        .catch(console.log)
+                                        .catch(process.dLogger.log)
                                 }
                                 this._setupNewDuel(
                                     { discordUser: message.author, duelUser: offender }, 
@@ -251,12 +251,12 @@ class DuelManager {
                 ]
             })
             message.channel.send(embed)
-                .catch(console.log)
+                .catch(process.dLogger.log)
 
             return duellist
         } catch (err) {
             message.channel.send(err.message)
-                .catch(console.log)
+                .catch(process.dLogger.log)
         }
     }
 
@@ -296,7 +296,7 @@ class DuelManager {
         })
 
         message.channel.send(embed)
-            .catch(console.log)
+            .catch(process.dLogger.log)
     }
 
     listDuellists (message) {
@@ -355,10 +355,10 @@ class DuelManager {
             })
 
             message.channel.send(embed)
-                .catch(console.log)
+                .catch(process.dLogger.log)
         } catch (err) {
             message.channel.send(err.message)
-                .catch(console.log)
+                .catch(process.dLogger.log)
         }
     }
     
@@ -373,7 +373,7 @@ class DuelManager {
             message.channel.send(this.$t.get('nicknameChanged', { name: duellist.displayName }))
         } catch (err) {
             message.channel.send(err.message)
-                .catch(console.log)
+                .catch(process.dLogger.log)
         }
     }
 
@@ -442,13 +442,13 @@ class DuelManager {
                                     }))
                                     this.duels.endDuel(duel)
                                 })
-                                .catch(console.log)
+                                .catch(process.dLogger.log)
                         } else
                             answer = this.$t.get('goodCancel')
 
                         message.channel.send(answer)
                     })
-                    .catch(console.log)
+                    .catch(process.dLogger.log)
             })
     }
     
@@ -717,9 +717,9 @@ class DuelManager {
                                     this._newRoundTimer(welcomeMessage, duel)
                                 }, 1000)
                             })
-                            .catch(console.log)
+                            .catch(process.dLogger.log)
                     })
-                    .catch(console.log)
+                    .catch(process.dLogger.log)
             })
     }
 

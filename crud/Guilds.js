@@ -26,7 +26,7 @@ class Guilds {
             );`;
             this.db.exec(createGuildTable)
         } catch (err) {
-            console.log(err)
+            process.dLogger.log(err)
         }
     }
 
@@ -82,7 +82,7 @@ class Guilds {
                 fs.unlinkSync(`data/duellists-${id}.json`)
                 
             } catch (err) {
-                console.log(err)
+                process.dLogger.log(err)
             }
         }
         return info.changes >= 0

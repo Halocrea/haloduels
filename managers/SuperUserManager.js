@@ -90,7 +90,7 @@ class SuperUserManager {
                 mainChannel.send(this.$t.get('challengeCanceled', { player1: playerNames[0], player2: playerNames[1] }))
                 this.duels.endDuel(duel)
             })
-            .catch(console.log)
+            .catch(process.dLogger.log)
     }
 
     async prefix (message, arg) {
@@ -158,7 +158,7 @@ class SuperUserManager {
 
                 
             })
-            .catch(console.log)
+            .catch(process.dLogger.log)
     }
 
     async _checkAuthorization (message) {

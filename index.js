@@ -17,7 +17,8 @@ const I18N          = require('./utils/I18N')
 
 let guilds    = null
 
-client.on('ready', () => {
+client.on('ready', async () => {
+    await require('./utils/dLogger').init(client)
     console.log('the bot is ready')
     guilds   = new Guilds()
 })
@@ -73,15 +74,11 @@ client.on('message', async message => {
 })
 
 client.on('guildCreate', guild => {
-    client.users.fetch(process.env.MAINTAINER)
-        .then(u => u.send(`New guild joined: ${guild.name} (id: ${guild.id}). This guild has ${guild.memberCount} members!\nI'm serving ${client.guilds.cache.size} servers now.`))
-        .catch(console.log)
+    process.dLogger.log(`New guild joined: ${guild.name} (id: ${guild.id}). This guild has ${guild.memberCount} members!\nI'm serving ${client.guilds.cache.size} servers now.`)
 })
 
 client.on('guildDelete', guild => {
-    client.users.fetch(process.env.MAINTAINER)
-        .then(u => u.send(`${guild.name} (id: ${guild.id}) removed me.\nI'm serving ${client.guilds.size} servers now.`))
-        .catch(console.log)
+    process.dLogger.log(`${guild.name} (id: ${guild.id}) removed me.\nI'm serving ${client.guilds.size} servers now.`)
 })
 
 console.log('Sarting the bot...')

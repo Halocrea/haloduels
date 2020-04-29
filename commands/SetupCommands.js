@@ -245,25 +245,25 @@ class SetupCommands {
                     }))
                 })
         } catch (error) {
-            console.log(error)
+            process.dLogger.log(error)
             const errorEmbed = generateEmbed({
                 title       : this.$t.get('errorGeneric'),
                 color       : '#ff0000',
                 description : `${this.$t.get('errorSetupAuto')}\n\n **Error:** ${error.message}`
             })
             if (loadingMsg)
-                loadingMsg.edit(errorEmbed).catch(console.log)
+                loadingMsg.edit(errorEmbed).catch(process.dLogger.log)
             else 
-                message.channel.send(errorEmbed).catch(console.log)
+                message.channel.send(errorEmbed).catch(process.dLogger.log)
             
             if (category)
-                category.delete().catch(console.log)
+                category.delete().catch(process.dLogger.log)
             
             if (mainChan)
-                mainChan.delete().catch(console.log)
+                mainChan.delete().catch(process.dLogger.log)
 
             if (rulesChan)
-                rulesChan.delete().catch(console.log)
+                rulesChan.delete().catch(process.dLogger.log)
 
             return false
         }
@@ -344,7 +344,7 @@ class SetupCommands {
                             .then(this._step2(message))
                     })
                     .catch((err) => {
-                        console.log(err)
+                        process.dLogger.log(err)
                         message.channel.send(this.$t.get('errorSetupTimeout'))
                     })
             })
@@ -391,7 +391,7 @@ class SetupCommands {
                         }
                     })
                     .catch((err) => {
-                        console.log(err)
+                        process.dLogger.log(err)
                         message.channel.send(this.$t.get('errorSetupTimeout'))
                     })
             })

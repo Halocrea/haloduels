@@ -19,7 +19,7 @@ class Duellists {
             );`;
             this.db.exec(createDuellistsTable)
         } catch (err) {
-            console.log(err)
+            process.dLogger.log(err)
         }
     }
 
@@ -49,7 +49,7 @@ class Duellists {
 
             return duellist
         } catch (err) {
-            console.log(err)
+            process.dLogger.log(err)
         }
     }
 

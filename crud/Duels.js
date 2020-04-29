@@ -26,7 +26,7 @@ class Duels {
             );`;
             this.db.exec(createDuelsTable)
         } catch (err) {
-            console.log(err)
+            process.dLogger.log(err)
         }
     }
 
@@ -74,7 +74,7 @@ class Duels {
 
             return duel
         } catch (err) {
-            console.log(err)
+            process.dLogger.log(err)
         }
     }
 
@@ -83,7 +83,7 @@ class Duels {
             const info = this.db.prepare('DELETE FROM duels WHERE id = ? LIMIT 1').run(duel.id)
             return info.changes
         } catch (err) {
-            console.log(err)
+            process.dLogger.log(err)
         }
 
         return false
