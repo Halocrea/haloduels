@@ -6,6 +6,7 @@
     "https://discord.gg/74UAq84"
   ],
   "dependencies": {
+    "axios": "^0.19.2",
     "better-sqlite3": "^7.0.1",
     "discord.js": "^12.1.1",
     "dotenv": "^8.2.0",
@@ -14,7 +15,7 @@
   "description": "A Discord Bot to let servers members fight some \"Halo-themed\" fights, full of gifs and stuff!",
   "devDependencies": {
     "readme-md-generator": "^1.0.0"
-  }, 
+  },
   "engines": {
     "node": ">=12.16.1",
     "yarn": ">=1.19.1"

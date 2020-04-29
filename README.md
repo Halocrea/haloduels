@@ -55,6 +55,14 @@ yarn
 node index.js
 ```
 
+### OPTIONAL FEATURE: TWITCH CHANNEL IN BOT STATUS
+The bot can automatically change its status from the default one (_"playing halocrea.com"_) to _"streaming %Game%"_ based on the activity of your Twitch channel.
+
+In order to do that, you must provide in the .env file: 
+* `TWITCH_CLIENT_ID`: your own Twitch Developer Client ID. To get yours, check [this page](https://dev.twitch.tv/dashboard/apps/create).
+* `TWITCH_CHANNEL_ID`: the **ID** of the channel you want to "watch". It's _not_ the name of your channel. To retrieve your channel's ID, you can use the Twitch API's Endpoint `https://api.twitch.tv/kraken/users?login=%YOUR CHANNEL NAME%` (you will need to provide your client ID in the header of the request, check [this page](https://dev.twitch.tv/docs/v5) for more info). 
+
+
 ## Setup 
 * If you never set up a Discord bot before, please follow the instructions over [here](https://discordapp.com/developers/docs/intro).
 * Once that is done, invite the bot to your server, and type `!duel` to start the installation wizard.

@@ -15,12 +15,27 @@ const Guilds        = require('./crud/Guilds')
 const SetupCommands = require('./commands/SetupCommands')
 const I18N          = require('./utils/I18N')
 
-let guilds    = null
+let guilds          = null
 
 client.on('ready', async () => {
     await require('./utils/dLogger').init(client)
+
     console.log('the bot is ready')
-    guilds   = new Guilds()
+
+    guilds          = new Guilds()
+    
+    if (process.env.TWITCH_CLIENT_ID 
+        && process.env.TWITCH_CLIENT_ID.length > 0
+        && process.env.TWITCH_CHANNEL_ID
+        && process.env.TWITCH_CHANNEL_ID.length > 0
+    ) {
+        const twitchUtil = require('./utils/twitchChannelStatus')
+        twitchUtil(client)
+        setInterval(() => {
+            twitchUtil(client)
+        }, 5 * 60000)
+    }
+    client.user.setStatus('available')
 })
 
 client.on('message', async message => {
