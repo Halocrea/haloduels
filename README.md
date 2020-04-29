@@ -7,7 +7,13 @@
     <img alt="License: GNU GPLv3" src="https://img.shields.io/badge/License-GNU GPLv3-yellow.svg" />
   </a>
   <img src="https://img.shields.io/maintenance/yes/2020" />
-  <img src="https://img.shields.io/discord/443833089966342145?color=7289DA&label=Halo%20Cr%C3%A9ation&logo=Discord" />
+  <br />
+  <a href="https://discord.gg/74UAq84" target="_blank">
+    <img src="https://img.shields.io/discord/443833089966342145?color=7289DA&label=Halo%20Cr%C3%A9ation&logo=Discord" />
+  </a>
+  <a href="https://twitter.com/HaloCreation" target="_blank">
+    <img src="https://img.shields.io/twitter/follow/HaloCreation?color=%232da1f3&logo=Twitter&style=flat-square" />
+  </a>
 </p>
 
 <p align="center"><img alt="Halo Duels logo" src="assets/logo-hd.png" width="100px" /></p>
