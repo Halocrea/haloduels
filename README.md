@@ -43,7 +43,7 @@ vi .env
 #provide the information required in the .env file
 
 docker build -t haloduels .
-docker run -d -v /home/docker/haloduels/saves:/app/saves --restart=always --name=haloduels haloduels
+docker run -d -v /absolute/path/to/haloduels/data:/app/data --restart=always --name=haloduels haloduels
 ```
 
 ### Without Docker
