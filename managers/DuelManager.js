@@ -316,6 +316,8 @@ class DuelManager {
         sorted.forEach((duellist, index) => {
             if (index === 0) 
                 prevCount = (duellist.stats.victories - duellist.stats.defeats)
+            else if (index >= 10)
+                return 
 
             const number    = (duellist.stats.victories - duellist.stats.defeats) === prevCount ? prevNumber : prevNumber + 1
             prevCount       = (duellist.stats.victories - duellist.stats.defeats)
@@ -455,8 +457,10 @@ class DuelManager {
     resetDailyGiftsForAll (message) {
         const duellists = this.duellists.all()
         duellists.forEach(d => {
-            d.dailyGifts = [...d.dailyGifts, ...d.genDailyGifts()]
-            this.duellists.update(d)
+            if (d.dailyGifts.length < 2) {
+                d.dailyGifts = [...d.dailyGifts, ...d.genDailyGifts()]
+                this.duellists.update(d)
+            }
         })
         
         message.guild.channels.resolve(this.duelGuild.mainChanId)
