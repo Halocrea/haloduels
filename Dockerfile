@@ -15,8 +15,12 @@ COPY package*.json ./
 RUN apk add --no-cache tzdata
 ENV TZ=Europe/Paris
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
-
-RUN yarn
+RUN apk add --no-cache --virtual .gyp \
+        python \
+        make \
+        g++ \
+    && yarn \
+    && apk del .gyp
 # If you are building your code for production
 # RUN npm ci --only=production
 
