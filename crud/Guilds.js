@@ -21,7 +21,6 @@ class Guilds {
                 setupCompleted BOOLEAN,
                 setupStep INTEGER,
                 superRoles TEXT,
-                userLimit BOOLEAN,
                 waitingSetupAnswer TEXT
             );`;
             this.db.exec(createGuildTable)

@@ -23,3 +23,5 @@ saves/*
 
 data/*
 !data/.gitkeep
+
+legacy/*
