@@ -20,7 +20,7 @@ class Guild {
             if (typeof args.waitingSetupAnswer === 'string') 
                 this.waitingSetupAnswer = JSON.parse(args.waitingSetupAnswer)
             else 
-                this.dailyGwaitingSetupAnswerifts = args.waitingSetupAnswer
+                this.waitingSetupAnswer = args.waitingSetupAnswer
         } else 
             this.waitingSetupAnswer = false
             
