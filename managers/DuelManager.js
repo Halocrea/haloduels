@@ -33,6 +33,7 @@ class DuelManager {
             return message.delete()
         
         duel.busy           = true
+        this.duels.update(duel)
         const round         = this.duels.generateNewRound(duel, message.author.id)
         
         const winner        = duel.duellists.find(d => d.duellist.id === round.winner)
