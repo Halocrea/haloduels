@@ -71,6 +71,7 @@ In order to do that, you must provide in the .env file:
 
 ## Setup 
 * If you never set up a Discord bot before, please follow the instructions over [here](https://discordapp.com/developers/docs/intro).
+* If you don't want to host your own version of the bot but consume an existing instance of it, you can use the following invite link: https://discordapp.com/oauth2/authorize?client_id=697434313351757865&scope=bot&permissions=388176
 * Once that is done, invite the bot to your server, and type `!duel` to start the installation wizard.
 
 ## Supported languages 
