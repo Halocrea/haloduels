@@ -25,7 +25,7 @@ const twitchChannelStatus = async (client) => {
         } else {
             client.user.setActivity('halocrea.com', {
                 type: 'PLAYING',
-                url : 'https://halocrea.com/'
+                url : '!duel | https://halocrea.com/'
             }) 
         }
     } catch (err) {
