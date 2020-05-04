@@ -81,7 +81,7 @@ If you'd like to get the bot in another language, feel free to contact us and co
 
 ## Contributing
 
-Contributions, issues and feature requests are welcome!<br />Feel free to check [issues page](https://github.com/tepec/haloduels/issues). 
+Contributions, issues and feature requests are welcome!<br />Feel free to check [issues page](https://github.com/Halocrea/haloduels.git). 
 
 ## Show your support
 
