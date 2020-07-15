@@ -701,14 +701,17 @@ class DuelManager {
                                                 }
                                                 
                                                 if (donator && donator.dailyGifts.length > 0) {
-                                                    duel.bonuses.push({ 
+                                                    // ticket #3 - score resets
+                                                    // needs to fetch the duel in its current state because the gift can occur while the duel already started. 
+                                                    const currentStateOfDuel = this.duels.getById(duel.id)
+                                                    currentStateOfDuel.bonuses.push({ 
                                                         receiverId  : d.duellist.id,
                                                         donorName   : donator.displayName,   
                                                         bonus       : JSON.parse(JSON.stringify(donator.dailyGifts[0]))
                                                     })
                                                     donator.dailyGifts.splice(0, 1)
                                                     this.duellists.update(donator)
-                                                    this.duels.update(duel)                            
+                                                    this.duels.update(currentStateOfDuel)                            
                                                     msg.channel.send(this.$t.get('donatorGiftedEquipmentToPlayer', { donator: donator.displayName, player: d.duellist.displayName }))
                                                     reaction.users.remove(user)
                                                 } else if (user) {
