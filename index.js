@@ -85,7 +85,7 @@ client.on('message', async message => {
         currentGuild.lastGiftsRenewal   = new Date()
         guilds.update(currentGuild)
         mainCommands.resetDailyGiftsForAll(message)
-    }  
+    } 
 })
 
 client.on('guildCreate', guild => {

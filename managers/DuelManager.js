@@ -455,7 +455,7 @@ class DuelManager {
             })
     }
     
-    resetDailyGiftsForAll (message) {
+    async resetDailyGiftsForAll (message) {
         const duellists = this.duellists.all()
         duellists.forEach(d => {
             if (d.dailyGifts.length < 2) {
@@ -463,9 +463,14 @@ class DuelManager {
                 this.duellists.update(d)
             }
         })
-        
-        message.guild.channels.resolve(this.duelGuild.mainChanId)
-            .send(this.$t.get('newDayForGifts'))
+
+        const chan      = message.guild.channels.resolve(this.duelGuild.mainChanId)
+        const lastMsg   = await chan.lastMessage
+
+        if (lastMsg.author.bot && lastMsg.content.startsWith(this.$t.get('newDayForGifts')))
+            lastMsg.delete().then(() => chan.send(this.$t.get('newDayForGifts')))
+        else 
+            chan.send(this.$t.get('newDayForGifts'))
     }
 
     retire (message) {
