@@ -119,7 +119,7 @@ class MainCommands {
     }
 
     inviteBot (message) {
-        message.channel.send(this.$t.get('inviteCmdText', { link : `https://discordapp.com/oauth2/authorize?client_id=${message.client.user.id}&scope=bot&permissions=388176` }))
+        message.channel.send(this.$t.get('inviteCmdText', { link : `https://discordapp.com/oauth2/authorize?client_id=${message.client.user.id}&scope=bot&permissions=8` }))
     }
 
     resetDailyGiftsForAll (message) {

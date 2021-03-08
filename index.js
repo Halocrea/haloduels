@@ -93,7 +93,7 @@ client.on('guildCreate', guild => {
 })
 
 client.on('guildDelete', guild => {
-    process.dLogger.log(`${guild.name} (id: ${guild.id}) removed me.\nI'm serving ${client.guilds.size} servers now.`)
+    process.dLogger.log(`${guild.name} (id: ${guild.id}) removed me.\nI'm serving ${client.guilds.cache.size} servers now.`)
 })
 
 console.log('Sarting the bot...')
