@@ -8,7 +8,7 @@
   </a>
   <img src="https://img.shields.io/maintenance/yes/2020" />
   <br />
-  <a href="https://discord.gg/74UAq84" target="_blank">
+  <a href="https://discord.gg/SQbxK33B2c" target="_blank">
     <img src="https://img.shields.io/discord/443833089966342145?color=7289DA&label=Halo%20Cr%C3%A9ation&logo=Discord" />
   </a>
   <a href="https://twitter.com/HaloCreation" target="_blank">
@@ -23,7 +23,7 @@
 <p align="center"><img alt="demo example" src="assets/readme.gif" /></p>
 
 ### 🏠 [Homepage](https://duels.halocrea.com/)
-### 🔫 [Demo](https://discord.gg/74UAq84)
+### 🔫 [Demo](https://discord.gg/SQbxK33B2c)
 
 ## Prerequisites
 
